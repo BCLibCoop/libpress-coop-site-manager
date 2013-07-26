@@ -55,7 +55,7 @@ class CoopSiteManager {
 	}
 	
 	public function frontside_enqueue_styles_scripts() {
-		error_log(__FUNCTION__);
+	//	error_log(__FUNCTION__);
 		wp_enqueue_style( 'coop-ci' );
 	//	wp_enqueue_script( 'coop-ci-js' );
 	}
@@ -76,7 +76,7 @@ class CoopSiteManager {
 		
 		if( ! current_user_can('manage_local_site') ) die('You do not have required permissions to view this page');
 		
-		$info = json_decode(get_option('coop-ci-info'));
+		$info = get_option('coop-ci-info');
 		
 		$out = array();
 		
@@ -98,7 +98,7 @@ class CoopSiteManager {
 		$out[] = '<label for="tag">Heading:</label>';
 		$out[] = '</th>';
 		$out[] = '<td>';
-		$out[] = '<input type="text" id="coop-ci-heading" name="coop-ci-heading" class="coop-ci" value="'.(!empty($info->heading)?$info->heading:'').'">';
+		$out[] = '<input type="text" id="coop-ci-heading" name="coop-ci-heading" class="coop-ci" value="'.$info['heading'].'">';
 		$out[] = '</td>';
 		
 		$out[] = '</tr>';
@@ -109,7 +109,7 @@ class CoopSiteManager {
 		$out[] = '<label for="tag">Email:</label>';
 		$out[] = '</th>';
 		$out[] = '<td>';
-		$out[] = '<input type="text" id="coop-ci-email" name="coop-ci-email" class="coop-ci" value="'.(!empty($info->email)?$info->email:'').'">';
+		$out[] = '<input type="text" id="coop-ci-email" name="coop-ci-email" class="coop-ci" value="'.$info['email'].'">';
 		$out[] = '</td>';
 		$out[] = '</tr>';
 		
@@ -120,7 +120,7 @@ class CoopSiteManager {
 		$out[] = '<label for="tag">Phone:</label>';
 		$out[] = '</th>';
 		$out[] = '<td>';
-		$out[] = '<input type="text" id="coop-ci-phone" name="coop-ci-phone" class="coop-ci" value="'.(!empty($info->phone)?$info->phone:'').'">';
+		$out[] = '<input type="text" id="coop-ci-phone" name="coop-ci-phone" class="coop-ci" value="'.$info['phone'].'">';
 		$out[] = '</td>';
 		$out[] = '</tr>';
 
@@ -131,7 +131,7 @@ class CoopSiteManager {
 		$out[] = '<label for="tag">Fax:</label>';
 		$out[] = '</th>';
 		$out[] = '<td>';
-		$out[] = '<input type="text" id="coop-ci-fax" name="coop-ci-fax" class="coop-ci" value="'.(!empty($info->fax)?$info->fax:'').'">';
+		$out[] = '<input type="text" id="coop-ci-fax" name="coop-ci-fax" class="coop-ci" value="'.$info['fax'].'">';
 		$out[] = '</td>';
 		$out[] = '</tr>';
 		
@@ -151,7 +151,7 @@ class CoopSiteManager {
 		$out[] = '<label for="tag">Street Address:</label>';
 		$out[] = '</th>';
 		$out[] = '<td>';
-		$out[] = '<input type="text" id="coop-ci-address" name="coop-ci-address" class="coop-ci" value="'.(!empty($info->address)?$info->address:'').'">';
+		$out[] = '<input type="text" id="coop-ci-address" name="coop-ci-address" class="coop-ci" value="'.$info['address'].'">';
 		$out[] = '</td>';
 		$out[] = '</tr>';
 
@@ -161,7 +161,7 @@ class CoopSiteManager {
 		$out[] = '<label for="tag">City/Town:</label>';
 		$out[] = '</th>';
 		$out[] = '<td>';
-		$out[] = '<input type="text" id="coop-ci-city" name="coop-ci-form" class="coop-ci" value="'.(!empty($info->city)?$info->city:'').'">';
+		$out[] = '<input type="text" id="coop-ci-city" name="coop-ci-form" class="coop-ci" value="'.$info['city'].'">';
 		$out[] = '</td>';
 		$out[] = '</tr>';
 		
@@ -171,7 +171,7 @@ class CoopSiteManager {
 		$out[] = '<label for="tag">Province:</label>';
 		$out[] = '</th>';
 		$out[] = '<td>';
-		$out[] = '<input type="text" id="coop-ci-prov" name="coop-ci-prov" class="coop-ci" value="'.(!empty($info->prov)?$info->prov:'').'">';
+		$out[] = '<input type="text" id="coop-ci-prov" name="coop-ci-prov" class="coop-ci" value="'.$info['prov'].'">';
 		$out[] = '</td>';
 		$out[] = '</tr>';
 
@@ -181,7 +181,7 @@ class CoopSiteManager {
 		$out[] = '<label for="tag">Postal Code:</label>';
 		$out[] = '</th>';
 		$out[] = '<td>';
-		$out[] = '<input type="text" id="coop-ci-pcode" name="coop-ci-pcode" class="coop-ci" value="'.(!empty($info->pcode)?$info->pcode:'').'">';
+		$out[] = '<input type="text" id="coop-ci-pcode" name="coop-ci-pcode" class="coop-ci" value="'.$info['pcode'].'">';
 		$out[] = '</td>';
 		$out[] = '</tr>';
 
@@ -213,9 +213,9 @@ class CoopSiteManager {
 			'pcode' 	=> sanitize_text_field($_POST['pcode'])
 		);
 		
-		$json = json_encode($info);
 		
-		if( update_option( 'coop-ci-info', $json ) ) {
+		
+		if( update_option( 'coop-ci-info', $info ) ) {
 			echo '{"result":"success","feedback":"Saved changes" }';
 		}
 		else {
@@ -238,7 +238,7 @@ class CoopSiteManager {
 		
 		$out[] = $before_widget;
 		
-		$info = json_decode(get_option('coop-ci-info'));
+		$info = maybe_unserialize(get_option('coop-ci-info'));
 		
 		if (!empty($info)) {
 		
