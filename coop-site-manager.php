@@ -10,14 +10,14 @@
  * Description: NETWORK ACTIVATE. This is the common location for the other Coop Plugins to reside.
  * Author: Erik Stainsby, Roaring Sky Software
  * Author URI: http://roaringsky.ca/plugins/coop_site_manager/
- * Version: 0.1.0
+ * Version: 0.2.1
  **/
  
 if ( ! class_exists( 'CoopSiteManager' )) :
 	
 class CoopSiteManager {
 
-	var $suffix;
+	var $slug = 'coop-site-manager';
 
 	public function __construct() {
 		add_action( 'init', array( &$this, '_init' ));
@@ -25,7 +25,7 @@ class CoopSiteManager {
 
 	public function _init() {
 				
-		wp_register_sidebar_widget('ci-widget','Contact Information',array(&$this,'ci_widget'));		
+		wp_register_sidebar_widget( $this->slug.'-widget','Contact Information',array(&$this, 'coop_site_manager_ci_widget'));		
 				
 		if( is_admin()) {	
 			add_action( 'admin_enqueue_scripts', array( &$this, 'admin_enqueue_styles_scripts' ));
@@ -35,29 +35,16 @@ class CoopSiteManager {
 	}
 		
 	public function admin_enqueue_styles_scripts($hook) {
-	
-	//	error_log('hook: ' . $hook);
-	
+		
 		wp_register_script( 'coop-site-manager-admin-js', plugins_url( '/js/coop-site-manager.js',__FILE__), array('jquery'));
 		wp_register_style( 'coop-site-manager-admin', plugins_url( '/css/coop-site-manager.css', __FILE__ ), false );
 		
 		wp_enqueue_style( 'coop-site-manager-admin' );
-		wp_enqueue_script( 'coop-site-manager-admin-js' );
-		
-/*
-		wp_register_script( 'coop-ci-admin-js', plugins_url( '/js/coop-ci-admin.js',__FILE__), array('jquery'));
-		wp_register_style( 'coop-ci-admin', plugins_url( '/css/coop-ci-admin.css', __FILE__ ), false );
-		
-		wp_enqueue_style( 'coop-ci-admin' );
-		wp_enqueue_script( 'coop-ci-admin-js' );
-*/
-		
+		wp_enqueue_script( 'coop-site-manager-admin-js' );	
 	}
 	
 	public function frontside_enqueue_styles_scripts() {
-	//	error_log(__FUNCTION__);
 		wp_enqueue_style( 'coop-ci' );
-	//	wp_enqueue_script( 'coop-ci-js' );
 	}
 	
 	
@@ -225,38 +212,36 @@ class CoopSiteManager {
 	}
 
 
-	public function ci_widget($args) {
+	public function coop_site_manager_ci_widget($args) {
 
 		extract($args);
 
-		/**
-		*	writes out the javascript 
-		*	necessary to load this library's map
-		*
-		***/
-		$out = array();
-		
+		$out = array();	
 		$out[] = $before_widget;
 		
 		$info = maybe_unserialize(get_option('coop-ci-info'));
 		
 		if (!empty($info)) {
-		
-			$out[] = $before_title . $info->heading . $after_title;
-	
+			$out[] = $before_title . $info['heading'] . $after_title;
 			$out[] = '<div class="coop-contact-info">';
-			$out[] = '<a href="mailto:'.$info->email.'">Email Us</a><br/>';
-			$out[] = '<strong>Phone</strong>'.$info->phone.'<br/>';
-			$out[] = '<strong>Fax</strong>'.$info->fax.'<br/>';
-			$out[] = $info->address.'<br/>';
-			$out[] = $info->city.' '.$info->prov.' ' .$info->pcode.'<br/>';
+			if( !empty( $info['email'] )) {
+				$out[] = '<a href="mailto:'.$info['email'].'">Email Us</a><br/>';
+			}
+			if( !empty( $info['phone'] )) {
+				$out[] = '<strong>Phone</strong> '.$info['phone'].'<br/>';
+			}
+			if( !empty( $info['fax'] )) {
+				$out[] = '<strong>Fax</strong> '.$info['fax'].'<br/>';
+			}
+			if( !empty( $info['address'] )) {
+				$out[] = $info['address'].'<br/>';
+				$out[] = $info['city'].' '.$info['prov'].' ' .$info['pcode'].'<br/>';
+			}
 			$out[] = '</div><!-- .coop-contact-info -->';
 		}
-			
-		if( empty($info)) {
+		else {
 			return '<!-- no results from ContactInfo plugin -->';
 		}
-		
 		$out[] = $after_widget;
 		
 		echo implode("\n",$out);
