@@ -1,15 +1,8 @@
-#wp-admin-bar-ubermenu_update_notifier {
-	display:none;
-}
-
 /** placeholder **/
 
-input.coop-hours {
-	width: 8em;
-	text-align: center;	
-}
 
-#slideshow-text-slide-content {
+textarea#slideshow-text-slide-content {
 	width: 40em;
 	height: 12em;
 }
+
