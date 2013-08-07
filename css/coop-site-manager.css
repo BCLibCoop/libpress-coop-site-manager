@@ -10,3 +10,6 @@ textarea#slideshow-text-slide-content {
 	height: 12em;
 }
 
+input.input-wide {
+	width: 300px;
+}

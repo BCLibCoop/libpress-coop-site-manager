@@ -84,7 +84,7 @@ class CoopSiteManager {
 		$out[] = '<label for="tag">Heading:</label>';
 		$out[] = '</th>';
 		$out[] = '<td>';
-		$out[] = '<input type="text" id="coop-ci-heading" name="coop-ci-heading" class="coop-ci regular-text" value="'.$info['heading'].'">';
+		$out[] = '<input type="text" id="coop-ci-heading" name="coop-ci-heading" class="coop-ci input-wide" value="'.$info['heading'].'">';
 		$out[] = '</td>';
 		
 		$out[] = '</tr>';
@@ -95,7 +95,7 @@ class CoopSiteManager {
 		$out[] = '<label for="tag">Email:</label>';
 		$out[] = '</th>';
 		$out[] = '<td>';
-		$out[] = '<input type="text" id="coop-ci-email" name="coop-ci-email" class="coop-ci regular-text" value="'.$info['email'].'">';
+		$out[] = '<input type="text" id="coop-ci-email" name="coop-ci-email" class="coop-ci input-wide" value="'.$info['email'].'">';
 		$out[] = '</td>';
 		$out[] = '</tr>';
 		
@@ -106,7 +106,7 @@ class CoopSiteManager {
 		$out[] = '<label for="tag">Phone:</label>';
 		$out[] = '</th>';
 		$out[] = '<td>';
-		$out[] = '<input type="text" id="coop-ci-phone" name="coop-ci-phone" class="coop-ci regular-text" value="'.$info['phone'].'">';
+		$out[] = '<input type="text" id="coop-ci-phone" name="coop-ci-phone" class="coop-ci input-wide" value="'.$info['phone'].'">';
 		$out[] = '</td>';
 		$out[] = '</tr>';
 
@@ -117,17 +117,27 @@ class CoopSiteManager {
 		$out[] = '<label for="tag">Fax:</label>';
 		$out[] = '</th>';
 		$out[] = '<td>';
-		$out[] = '<input type="text" id="coop-ci-fax" name="coop-ci-fax" class="coop-ci regular-text" value="'.$info['fax'].'">';
+		$out[] = '<input type="text" id="coop-ci-fax" name="coop-ci-fax" class="coop-ci input-wide" value="'.$info['fax'].'">';
 		$out[] = '</td>';
 		$out[] = '</tr>';
 		
 		
 		$out[] = '<tr valign="top">';
 		$out[] = '<th scope="row">';
-		$out[] = '<label for="tag">Street Address:</label>';
+		$out[] = '<label for="tag">Address 1:</label>';
 		$out[] = '</th>';
 		$out[] = '<td>';
-		$out[] = '<input type="text" id="coop-ci-address" name="coop-ci-address" class="coop-ci regular-text" value="'.$info['address'].'">';
+		$out[] = '<input type="text" id="coop-ci-address" name="coop-ci-address" class="coop-ci input-wide" value="'.$info['address'].'">';
+		$out[] = '</td>';
+		$out[] = '</tr>';
+
+
+		$out[] = '<tr valign="top">';
+		$out[] = '<th scope="row">';
+		$out[] = '<label for="tag">Address 2:</label>';
+		$out[] = '</th>';
+		$out[] = '<td>';
+		$out[] = '<input type="text" id="coop-ci-address-2" name="coop-ci-address-2" class="coop-ci input-wide" value="'.$info['address2'].'">';
 		$out[] = '</td>';
 		$out[] = '</tr>';
 
@@ -137,7 +147,7 @@ class CoopSiteManager {
 		$out[] = '<label for="tag">City/Town:</label>';
 		$out[] = '</th>';
 		$out[] = '<td>';
-		$out[] = '<input type="text" id="coop-ci-city" name="coop-ci-form" class="coop-ci regular-text" value="'.$info['city'].'">';
+		$out[] = '<input type="text" id="coop-ci-city" name="coop-ci-form" class="coop-ci input-wide" value="'.$info['city'].'">';
 		$out[] = '</td>';
 		$out[] = '</tr>';
 		
@@ -147,7 +157,7 @@ class CoopSiteManager {
 		$out[] = '<label for="tag">Province:</label>';
 		$out[] = '</th>';
 		$out[] = '<td>';
-		$out[] = '<input type="text" id="coop-ci-prov" name="coop-ci-prov" class="coop-ci regular-text" value="'.$info['prov'].'">';
+		$out[] = '<input type="text" id="coop-ci-prov" name="coop-ci-prov" class="coop-ci input-wide" value="'.$info['prov'].'">';
 		$out[] = '</td>';
 		$out[] = '</tr>';
 
@@ -157,7 +167,7 @@ class CoopSiteManager {
 		$out[] = '<label for="tag">Postal Code:</label>';
 		$out[] = '</th>';
 		$out[] = '<td>';
-		$out[] = '<input type="text" id="coop-ci-pcode" name="coop-ci-pcode" class="coop-ci regular-text" value="'.$info['pcode'].'">';
+		$out[] = '<input type="text" id="coop-ci-pcode" name="coop-ci-pcode" class="coop-ci input-wide" value="'.$info['pcode'].'">';
 		$out[] = '</td>';
 		$out[] = '</tr>';
 
@@ -184,6 +194,7 @@ class CoopSiteManager {
 			'fax' 		=> sanitize_text_field($_POST['fax']),
 		//	'enable_form' 		=> $_POST['enable_form'],
 			'address' 	=> sanitize_text_field($_POST['address']),
+			'address2' 	=> sanitize_text_field($_POST['address2']),
 			'city' 		=> sanitize_text_field($_POST['city']),
 			'prov' 		=> sanitize_text_field($_POST['prov']),
 			'pcode' 	=> sanitize_text_field($_POST['pcode'])
@@ -224,6 +235,9 @@ class CoopSiteManager {
 			}
 			if( !empty( $info['address'] )) {
 				$out[] = $info['address'].'<br/>';
+				if( !empty($info['address2'])) {
+					$out[] = $info['address2'].'<br/>';
+				}
 				$out[] = $info['city'].' '.$info['prov'].' ' .$info['pcode'].'<br/>';
 			}
 			$out[] = '</div><!-- .coop-contact-info -->';

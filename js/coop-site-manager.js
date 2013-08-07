@@ -13,6 +13,7 @@
 		phone: jQuery('#coop-ci-phone').val().trim(),
 		fax: jQuery('#coop-ci-fax').val().trim(),
 		address: jQuery('#coop-ci-address').val().trim(),	 
+		address2: jQuery('#coop-ci-address-2').val().trim(),	 
 		city: jQuery('#coop-ci-city').val().trim(), 
 		prov: jQuery('#coop-ci-prov').val().trim(),	 
 		pcode: jQuery('#coop-ci-pcode').val().trim()
