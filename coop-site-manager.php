@@ -7,10 +7,10 @@
  **/
 /**
  * Plugin Name: Coop Site Manager
- * Description: NETWORK ACTIVATE. This is the common location for the other Coop Plugins to reside.
+ * Description: Install as MUST USE. This is the common location for the other Coop Plugins to reside.
  * Author: Erik Stainsby, Roaring Sky Software
  * Author URI: http://roaringsky.ca/plugins/coop_site_manager/
- * Version: 0.2.1
+ * Version: 0.3.4
  **/
  
 if ( ! class_exists( 'CoopSiteManager' )) :
@@ -50,12 +50,8 @@ class CoopSiteManager {
 	
 	public function add_site_manager_menu() 
 	{
-		//									page			menu			cap				handle/slug		
 		$this->suffix = add_menu_page( 'Contact Information', 'Site Manager', 'manage_local_site', 'site-manager', array(&$this,'admin_contact_info_page'), '', 29 );
-	
 		add_submenu_page( 'site-manager', 'Contact Information','Contact Information', 'manage_local_site', 'site-manager', array(&$this,'admin_contact_info_page'));
-	
-	//	error_log('suffix: ' . $this->suffix );
 	}
 
 	
@@ -86,7 +82,6 @@ class CoopSiteManager {
 		$out[] = '<td>';
 		$out[] = '<input type="text" id="coop-ci-heading" name="coop-ci-heading" class="coop-ci input-wide" value="'.$info['heading'].'">';
 		$out[] = '</td>';
-		
 		$out[] = '</tr>';
 		
 		
