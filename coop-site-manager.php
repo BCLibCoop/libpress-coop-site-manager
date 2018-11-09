@@ -10,7 +10,8 @@
  * Description: Install as MUST USE. This is the common location for the other Coop Plugins to reside.
  * Author: Erik Stainsby, Roaring Sky Software
  * Author URI: http://roaringsky.ca/plugins/coop_site_manager/
- * Version: 0.3.4
+ * Updated by ben.holt@bc.libraries.coop to add multilingual support via the polylang plugin
+ * Version: 0.4.0
  **/
  
 if ( ! class_exists( 'CoopSiteManager' )) :
@@ -31,6 +32,13 @@ class CoopSiteManager {
 			add_action( 'admin_enqueue_scripts', array( &$this, 'admin_enqueue_styles_scripts' ));
 			add_action( 'admin_menu', array( &$this,'add_site_manager_menu' ));
 			add_action( 'wp_ajax_coop-save-ci-change', array( &$this, 'ci_admin_save_changes'));
+		}
+
+		// Register strings for multilingual support
+		if ( function_exists('pll_register_string')) {
+			pll_register_string('Email Us', 'Email Us', 'coop-site-manager');
+			pll_register_string('Phone', 'Phone', 'coop-site-manager');
+			pll_register_string('Fax', 'Fax', 'coop-site-manager');
 		}
 	}
 		
@@ -220,13 +228,13 @@ class CoopSiteManager {
 			$out[] = $before_title . $info['heading'] . $after_title;
 			$out[] = '<div class="coop-contact-info">';
 			if( !empty( $info['email'] )) {
-				$out[] = '<a href="mailto:'.$info['email'].'">Email Us</a><br/>';
+				$out[] = '<a href="mailto:'.$info['email'].'">' . (function_exists('pll__') ? pll__('Email Us', 'coop-site-manager') : 'Email Us') . '</a><br/>';
 			}
 			if( !empty( $info['phone'] )) {
-				$out[] = '<strong>Phone</strong> '.$info['phone'].'<br/>';
+				$out[] = '<strong>' . (function_exists('pll__') ? pll__('Phone', 'coop-site-manager') : 'Phone') . '</strong> '.$info['phone'].'<br/>';
 			}
 			if( !empty( $info['fax'] )) {
-				$out[] = '<strong>Fax</strong> '.$info['fax'].'<br/>';
+				$out[] = '<strong>' . (function_exists('pll__') ? pll__('Fax', 'coop-site-manager') : 'Fax') . '</strong> '.$info['fax'].'<br/>';
 			}
 			if( !empty( $info['address'] )) {
 				$out[] = $info['address'].'<br/>';
