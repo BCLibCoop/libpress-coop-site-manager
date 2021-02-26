@@ -1,15 +1,13 @@
-/** placeholder **/
-
 #wp-admin-bar-ubermenu_update_notifier {
-	/* note to self: leave this one in here */
-	display: none;
+  /* note to self: leave this one in here */
+  display: none;
 }
 
 textarea#slideshow-text-slide-content {
-	width: 40em;
-	height: 12em;
+  width: 40em;
+  height: 12em;
 }
 
 input.input-wide {
-	width: 300px;
+  width: 300px;
 }
