@@ -31,8 +31,8 @@
 
 namespace BCLibCoop;
 
-use function \pll__;
-use function \pll_register_string;
+use function pll__;
+use function pll_register_string;
 
 class CoopSiteManager
 {
