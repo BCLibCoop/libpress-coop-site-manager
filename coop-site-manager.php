@@ -274,7 +274,7 @@ class CoopSiteManager
         $out = [];
         $out[] = $before_widget;
 
-        $info = maybe_unserialize(get_option('coop-ci-info', []));
+        $info = get_option('coop-ci-info', []);
 
         if (!empty($info)) {
             $out[] = $before_title . $info['heading'] . $after_title;
@@ -313,4 +313,7 @@ class CoopSiteManager
 // No direct access
 defined('ABSPATH') || die(-1);
 
+require_once 'inc/json-ld.php';
+
 new CoopSiteManager();
+new LibPressSchema();
