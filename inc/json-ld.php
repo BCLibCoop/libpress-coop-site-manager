@@ -103,7 +103,10 @@ class LibPressSchema
         }
 
         // If we have hours and one of the widgets is active, include hours in the schema data
-        if (!empty($days) && (is_active_widget('hours-widget') || is_active_widget('brief-hours-widget'))) {
+        // Again, check for widgets is to not output old/incorrect hours for a federation that
+        // doesn't really have hours, or lists multiple library hours manually
+        if (!empty($days) && (is_active_widget(false, false, 'hours-widget') || is_active_widget(false, false, 'brief-hours-widget'))) {
+
             $schema['openingHoursSpecification'] = [];
 
             foreach ($days as $day => $hours) {
