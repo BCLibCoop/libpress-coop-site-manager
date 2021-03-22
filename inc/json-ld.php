@@ -105,40 +105,45 @@ class LibPressSchema
         // If we have hours and one of the widgets is active, include hours in the schema data
         // Again, check for widgets is to not output old/incorrect hours for a federation that
         // doesn't really have hours, or lists multiple library hours manually
-        if (!empty($days) && (is_active_widget(false, false, 'hours-widget') || is_active_widget(false, false, 'brief-hours-widget'))) {
-
+        if (
+            !empty($days)
+            && (is_active_widget(false, false, 'hours-widget') || is_active_widget(false, false, 'brief-hours-widget'))
+        ) {
             $schema['openingHoursSpecification'] = [];
 
             foreach ($days as $day => $hours) {
                 if ($hours['notopen'] !== 'true') {
                     foreach (['', '_2'] as $suffix) {
-                        if (!empty($hours['open' . $suffix]) && !empty($hours['close' . $suffix])) {
-                            // Take a stab at converting these arbitrary text fields to a full time
-                            $open = $hours['open' . $suffix];
-                            if (stripos($open, 'noon') === false) {
-                                $meridiem = 'AM';
-                                if (strpos($open, '12') === 0) {
-                                    $meridiem = 'PM';
-                                }
+                        // Take a stab at converting these arbitrary text fields to a full time
+                        foreach (['open', 'close'] as $hour) {
+                            $$hour = $hours[$hour . $suffix];
 
-                                $open = preg_replace('/\D*$/', $meridiem, $open, 1);
-                            }
-
-                            $close = $hours['close' . $suffix];
-                            if (stripos($close, 'noon') === false) {
+                            // Don't mess with "noon" or if there is already a meridiem
+                            if (stripos($$hour, 'noon') === false || !preg_match('/[ap]m/i', $$hour)) {
                                 $meridiem = 'PM';
-                                if (strpos($close, '12') === 0) {
-                                    $meridiem = 'AM';
+
+                                if (preg_match('/(\d+)/', $$hour, $this_hour)) {
+                                    $this_hour = (int) $this_hour[1];
+
+                                    // Conservative guess that libraries won't be open past 9pm
+                                    if ($this_hour >= 9 && $this_hour <= 11) {
+                                        $meridiem = 'AM';
+                                    }
                                 }
 
-                                $close = preg_replace('/\D*$/', $meridiem, $close, 1);
+                                $$hour = preg_replace('/\D*$/', $meridiem, $$hour, 1);
                             }
 
+                            // Do strtotime now so we can check if it worked before adding the day
+                            $$hour = strtotime($$hour);
+                        }
+
+                        if ($open && $close) {
                             $schema['openingHoursSpecification'][] = [
                                 '@type' => 'OpeningHoursSpecification',
                                 'dayOfWeek' => 'https://schema.org/' . date('l', strtotime($day)),
-                                'opens' => date('H:i:s', strtotime($open)),
-                                'closes' => date('H:i:s', strtotime($close)),
+                                'opens' => date('H:i:s', $open),
+                                'closes' => date('H:i:s', $close),
                             ];
                         }
                     }
