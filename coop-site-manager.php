@@ -18,7 +18,7 @@
  * @wordpress-plugin
  * Plugin Name:       Coop Site Manager
  * Description:       This is the common location for the other Coop Plugins to reside.
- * Version:           1.1.3
+ * Version:           2.0.0
  * Network:           true
  * Requires at least: 5.2
  * Requires PHP:      7.0
@@ -31,14 +31,13 @@
 
 namespace BCLibCoop;
 
-use function pll__;
 use function pll_register_string;
 
 class CoopSiteManager
 {
     private static $instance;
 
-    public $slug = 'coop-site-manager';
+    public static $slug = 'coop-site-manager';
 
     public function __construct()
     {
@@ -49,17 +48,15 @@ class CoopSiteManager
         self::$instance = $this;
 
         add_action('init', [&$this, 'init']);
+        add_action('widgets_init', [&$this, 'widgetsInit']);
+
+        add_filter('option_sidebars_widgets', [&$this, 'legacySidebarConfig']);
+        add_filter('option_widget_hours-widget', [&$this, 'legacyWidgetInstance']);
+        add_filter('option_widget_coop-site-manager-widget', [&$this, 'legacyWidgetInstance']);
     }
 
     public function init()
     {
-        wp_register_sidebar_widget(
-            $this->slug . '-widget',
-            'Contact Information',
-            [&$this, 'contactInfoWidget'],
-            ['classname' => 'CoopSiteManager_coop_site_manager_ci_widget']
-        );
-
         if (is_admin()) {
             add_action('admin_enqueue_scripts', [&$this, 'adminEnqueueStylesScripts']);
             // Add admin menu item with a lower priority so it is avaliable for plugins adding child menus
@@ -73,6 +70,48 @@ class CoopSiteManager
             pll_register_string('Phone', 'Phone', 'coop-site-manager');
             pll_register_string('Fax', 'Fax', 'coop-site-manager');
         }
+    }
+
+    /**
+     * Widget previously registered as a single widget, add an instance ID
+     * so they continue to function correctly
+     */
+    public function legacySidebarConfig($sidebars)
+    {
+        foreach ($sidebars as &$sidebar_widgets) {
+            if (is_array($sidebar_widgets)) {
+                foreach ($sidebar_widgets as &$widget) {
+                    if (
+                        in_array($widget, ['coop-site-manager-widget'])
+                        && strpos($widget, '-1') === false
+                    ) {
+                        $widget = $widget . '-1';
+                    }
+                }
+            }
+        }
+
+        return $sidebars;
+    }
+
+    /**
+     * Widget previously registered as a single widget, add a setting for
+     * the first instance if one doesn't exist
+     */
+    public function legacyWidgetInstance($widget_settings)
+    {
+        if (!isset($widget_settings[1])) {
+            $widget_settings[1] = [];
+        }
+
+        return $widget_settings;
+    }
+
+    public function widgetsInit()
+    {
+        require_once 'inc/ContactInfoWidget.php';
+
+        register_widget(__NAMESPACE__ . '\ContactInfoWidget');
     }
 
     public function adminEnqueueStylesScripts($hook)
@@ -265,48 +304,6 @@ class CoopSiteManager
             'result' => 'failed',
             'feedback' => 'Failed to save changes',
         ]);
-    }
-
-    public function contactInfoWidget($args)
-    {
-        extract($args);
-
-        $out = [];
-        $out[] = $before_widget;
-
-        $info = get_option('coop-ci-info', []);
-
-        if (!empty($info)) {
-            $out[] = $before_title . $info['heading'] . $after_title;
-            $out[] = '<div class="coop-contact-info">';
-            if (!empty($info['email'])) {
-                $out[] = '<a href="mailto:' . $info['email'] . '">'
-                         . (function_exists('pll__') ? pll__('Email Us', 'coop-site-manager') : 'Email Us')
-                         . '</a><br/>';
-            }
-            if (!empty($info['phone'])) {
-                $out[] = '<strong>' . (function_exists('pll__') ? pll__('Phone', 'coop-site-manager') : 'Phone')
-                         . '</strong> ' . $info['phone'] . '<br/>';
-            }
-            if (!empty($info['fax'])) {
-                $out[] = '<strong>' . (function_exists('pll__') ? pll__('Fax', 'coop-site-manager') : 'Fax')
-                        . '</strong> ' . $info['fax'] . '<br/>';
-            }
-            if (!empty($info['address'])) {
-                $out[] = $info['address'] . '<br/>';
-                if (!empty($info['address2'])) {
-                    $out[] = $info['address2'] . '<br/>';
-                }
-                $out[] = $info['city'] . ' ' . $info['prov'] . ' ' . $info['pcode'] . '<br/>';
-            }
-            $out[] = '</div><!-- .coop-contact-info -->';
-        } else {
-            $out[] = '<!-- no results from ContactInfo plugin -->';
-        }
-
-        $out[] = $after_widget;
-
-        echo implode("\n", $out);
     }
 }
 
