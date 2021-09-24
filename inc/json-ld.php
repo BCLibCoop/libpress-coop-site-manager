@@ -73,7 +73,7 @@ class LibPressSchema
 
             // Only include address info in the contact info widget is active
             // Most federartions have this turned off
-            if (is_active_widget('coop-site-manager-widget')) {
+            if (is_active_widget(false, false, 'coop-site-manager-widget')) {
                 if (!empty($info['city']) && !empty($info['prov'])) {
                     $schema['address'] = [
                         '@type' => 'PostalAddress',
