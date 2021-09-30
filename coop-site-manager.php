@@ -18,7 +18,7 @@
  * @wordpress-plugin
  * Plugin Name:       Coop Site Manager
  * Description:       This is the common location for the other Coop Plugins to reside.
- * Version:           2.0.0
+ * Version:           2.0.1
  * Network:           true
  * Requires at least: 5.2
  * Requires PHP:      7.0
@@ -83,9 +83,10 @@ class CoopSiteManager
                 foreach ($sidebar_widgets as &$widget) {
                     if (
                         in_array($widget, ['coop-site-manager-widget'])
-                        && strpos($widget, '-1') === false
+                        && ! preg_match('/-\d$/', $widget)
                     ) {
                         $widget = $widget . '-1';
+                        break;
                     }
                 }
             }
