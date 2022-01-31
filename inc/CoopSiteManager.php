@@ -92,8 +92,8 @@ class CoopSiteManager
             return;
         }
 
-        wp_enqueue_script('coop-site-manager-admin-js', plugins_url('/js/coop-site-manager.js', __FILE__), ['jquery']);
-        wp_enqueue_style('coop-site-manager-admin', plugins_url('/css/coop-site-manager.css', __FILE__), false);
+        wp_enqueue_script('coop-site-manager-admin-js', plugins_url('/js/coop-site-manager.js', dirname(__FILE__)), ['jquery']);
+        wp_enqueue_style('coop-site-manager-admin', plugins_url('/css/coop-site-manager.css', dirname(__FILE__)), false);
     }
 
     public function addSiteManagerMenu()
