@@ -10,6 +10,18 @@ class CoopSiteManager
 
     public static $slug = 'coop-site-manager';
 
+    private static $fields = [
+        'heading' => 'Heading',
+        'email' => 'Email',
+        'phone' => 'Phone',
+        'fax' => 'Fax',
+        'address' => 'Address 1',
+        'address2' => 'Address 2',
+        'city' => 'City/Town',
+        'prov' => 'Province',
+        'pcode' => 'Postal Code',
+    ];
+
     public function __construct()
     {
         if (isset(self::$instance)) {
@@ -92,8 +104,18 @@ class CoopSiteManager
             return;
         }
 
-        wp_enqueue_script('coop-site-manager-admin-js', plugins_url('/js/coop-site-manager.js', dirname(__FILE__)), ['jquery']);
-        wp_enqueue_style('coop-site-manager-admin', plugins_url('/css/coop-site-manager.css', dirname(__FILE__)), false);
+        wp_enqueue_script(
+            'coop-site-manager-admin-js',
+            plugins_url('/js/coop-site-manager.js', dirname(__FILE__)),
+            ['jquery'],
+            get_plugin_data(SITEMANAGER_PLUGIN_FILE, false, false)['Version'],
+            true
+        );
+        wp_enqueue_style(
+            'coop-site-manager-admin',
+            plugins_url('/css/coop-site-manager.css', dirname(__FILE__)),
+            get_plugin_data(SITEMANAGER_PLUGIN_FILE, false, false)['Version']
+        );
     }
 
     public function addSiteManagerMenu()
@@ -124,121 +146,30 @@ class CoopSiteManager
             wp_die('You do not have required permissions to view this page');
         }
 
-        $info = get_option('coop-ci-info', [
-          'heading' => '',
-          'email' => '',
-          'phone' => '',
-          'fax' => '',
-          'address' => '',
-          'address2' => '',
-          'city' => '',
-          'prov' => '',
-          'pcode' => '',
-        ]);
+        $info = get_option('coop-ci-info', array_fill_keys(array_keys(self::$fields), ''));
 
         $out = [];
 
         $out[] = '<div class="wrap">';
 
-        $out[] = '<div id="icon-options-general" class="icon32">';
-        $out[] = '<br>';
-        $out[] = '</div>';
-
-        $out[] = '<h2>Contact Information parameters</h2>';
+        $out[] = '<h1 class="wp-heading-inline">Contact Information</h1>';
+        $out[] = '<hr class="wp-header-end">';
 
         $out[] = '<p>Contact info used on the front page of the site</p>';
 
         $out[] = '<table class="form-table">';
 
-        $out[] = '<tr valign="top">';
-        $out[] = '<th scope="row">';
-        $out[] = '<label for="tag">Heading:</label>';
-        $out[] = '</th>';
-        $out[] = '<td>';
-        $out[] = '<input type="text" id="coop-ci-heading" name="coop-ci-heading" class="coop-ci input-wide" value="'
-                 . $info['heading'] . '">';
-        $out[] = '</td>';
-        $out[] = '</tr>';
-
-        $out[] = '<tr valign="top">';
-        $out[] = '<th scope="row">';
-        $out[] = '<label for="tag">Email:</label>';
-        $out[] = '</th>';
-        $out[] = '<td>';
-        $out[] = '<input type="text" id="coop-ci-email" name="coop-ci-email" class="coop-ci input-wide" value="'
-                 . $info['email'] . '">';
-        $out[] = '</td>';
-        $out[] = '</tr>';
-
-        $out[] = '<tr valign="top">';
-        $out[] = '<th scope="row">';
-        $out[] = '<label for="tag">Phone:</label>';
-        $out[] = '</th>';
-        $out[] = '<td>';
-        $out[] = '<input type="text" id="coop-ci-phone" name="coop-ci-phone" class="coop-ci input-wide" value="'
-                 . $info['phone'] . '">';
-        $out[] = '</td>';
-        $out[] = '</tr>';
-
-        $out[] = '<tr valign="top">';
-        $out[] = '<th scope="row">';
-        $out[] = '<label for="tag">Fax:</label>';
-        $out[] = '</th>';
-        $out[] = '<td>';
-        $out[] = '<input type="text" id="coop-ci-fax" name="coop-ci-fax" class="coop-ci input-wide" value="'
-                 . $info['fax'] . '">';
-        $out[] = '</td>';
-        $out[] = '</tr>';
-
-        $out[] = '<tr valign="top">';
-        $out[] = '<th scope="row">';
-        $out[] = '<label for="tag">Address 1:</label>';
-        $out[] = '</th>';
-        $out[] = '<td>';
-        $out[] = '<input type="text" id="coop-ci-address" name="coop-ci-address" class="coop-ci input-wide" value="'
-                 . $info['address'] . '">';
-        $out[] = '</td>';
-        $out[] = '</tr>';
-
-        $out[] = '<tr valign="top">';
-        $out[] = '<th scope="row">';
-        $out[] = '<label for="tag">Address 2:</label>';
-        $out[] = '</th>';
-        $out[] = '<td>';
-        $out[] = '<input type="text" id="coop-ci-address-2" name="coop-ci-address-2" class="coop-ci input-wide" value="'
-                 . $info['address2'] . '">';
-        $out[] = '</td>';
-        $out[] = '</tr>';
-
-        $out[] = '<tr valign="top">';
-        $out[] = '<th scope="row">';
-        $out[] = '<label for="tag">City/Town:</label>';
-        $out[] = '</th>';
-        $out[] = '<td>';
-        $out[] = '<input type="text" id="coop-ci-city" name="coop-ci-form" class="coop-ci input-wide" value="'
-                 . $info['city'] . '">';
-        $out[] = '</td>';
-        $out[] = '</tr>';
-
-        $out[] = '<tr valign="top">';
-        $out[] = '<th scope="row">';
-        $out[] = '<label for="tag">Province:</label>';
-        $out[] = '</th>';
-        $out[] = '<td>';
-        $out[] = '<input type="text" id="coop-ci-prov" name="coop-ci-prov" class="coop-ci input-wide" value="'
-                 . $info['prov'] . '">';
-        $out[] = '</td>';
-        $out[] = '</tr>';
-
-        $out[] = '<tr valign="top">';
-        $out[] = '<th scope="row">';
-        $out[] = '<label for="tag">Postal Code:</label>';
-        $out[] = '</th>';
-        $out[] = '<td>';
-        $out[] = '<input type="text" id="coop-ci-pcode" name="coop-ci-pcode" class="coop-ci input-wide" value="'
-                 . $info['pcode'] . '">';
-        $out[] = '</td>';
-        $out[] = '</tr>';
+        foreach (self::$fields as $field_key => $field_name) {
+            $out[] = '<tr valign="top">';
+            $out[] = '<th scope="row">';
+            $out[] = '<label for="coop-ci-' . $field_key . '">' . $field_name . ':</label>';
+            $out[] = '</th>';
+            $out[] = '<td>';
+            $out[] = '<input type="text" id="coop-ci-' . $field_key . '" name="' . $field_key . '" '
+                . 'class="coop-ci input-wide" value="' . $info[$field_key] . '">';
+            $out[] = '</td>';
+            $out[] = '</tr>';
+        }
 
         $out[] = '</table>';
 
@@ -252,18 +183,11 @@ class CoopSiteManager
 
     public function adminContactInfoPageSave()
     {
-        $info = [
-            'heading'  => sanitize_text_field($_POST['heading']),
-            'email'   => sanitize_text_field($_POST['email']),
-            'phone'   => sanitize_text_field($_POST['phone']),
-            'fax'     => sanitize_text_field($_POST['fax']),
-            // 'enable_form'    => $_POST['enable_form'],
-            'address'   => sanitize_text_field($_POST['address']),
-            'address2'   => sanitize_text_field($_POST['address2']),
-            'city'     => sanitize_text_field($_POST['city']),
-            'prov'     => sanitize_text_field($_POST['prov']),
-            'pcode'   => sanitize_text_field($_POST['pcode'])
-        ];
+        $info = [];
+
+        foreach (self::$fields as $field_key => $field_name) {
+            $info[$field_key] = !empty($_POST[$field_key]) ? sanitize_text_field($_POST[$field_key]) : '';
+        }
 
         if (update_option('coop-ci-info', $info)) {
             wp_send_json([

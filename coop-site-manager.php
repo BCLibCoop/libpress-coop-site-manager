@@ -18,7 +18,7 @@
  * @wordpress-plugin
  * Plugin Name:       Coop Site Manager
  * Description:       This is the common location for the other Coop Plugins to reside.
- * Version:           2.1.0
+ * Version:           2.1.2
  * Network:           true
  * Requires at least: 5.2
  * Requires PHP:      7.0
@@ -33,6 +33,7 @@ namespace BCLibCoop;
 
 // No direct access
 defined('ABSPATH') || die(-1);
+define('SITEMANAGER_PLUGIN_FILE', __FILE__);
 
 add_action('plugins_loaded', function () {
     require_once 'inc/CoopSiteManager.php';
