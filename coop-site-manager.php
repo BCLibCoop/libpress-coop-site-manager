@@ -35,12 +35,14 @@ namespace BCLibCoop;
 defined('ABSPATH') || die(-1);
 define('SITEMANAGER_PLUGIN_FILE', __FILE__);
 
-add_action('plugins_loaded', function () {
-    require_once 'inc/CoopSiteManager.php';
-    require_once 'inc/LibPressSchema.php';
-    require_once 'inc/NetworkSitkaLibraries.php';
-    require_once 'inc/NetworkThemeSettings.php';
+/**
+ * Require Composer autoloader if installed on it's own
+ */
+if (file_exists($composer = __DIR__ . '/vendor/autoload.php')) {
+    require_once $composer;
+}
 
+add_action('plugins_loaded', function () {
     new CoopSiteManager();
     new LibPressSchema();
     new NetworkSitkaLibraries();

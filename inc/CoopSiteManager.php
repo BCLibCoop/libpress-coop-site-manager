@@ -93,8 +93,6 @@ class CoopSiteManager
 
     public function widgetsInit()
     {
-        require_once 'ContactInfoWidget.php';
-
         register_widget(__NAMESPACE__ . '\ContactInfoWidget');
     }
 
