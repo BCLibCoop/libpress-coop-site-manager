@@ -18,7 +18,7 @@
  * @wordpress-plugin
  * Plugin Name:       Coop Site Manager
  * Description:       This is the common location for the other Coop Plugins to reside.
- * Version:           2.1.2
+ * Version:           2.2.0
  * Network:           true
  * Requires at least: 5.2
  * Requires PHP:      7.0
