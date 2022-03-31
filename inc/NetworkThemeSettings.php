@@ -51,6 +51,7 @@ class NetworkThemeSettings
                         <th>WP Site ID</th>
                         <th>Domain Name</th>
                         <th>Custom CSS</th>
+                        <th>Search Settings</th>
                     </tr>
                 </thead>
 
@@ -59,6 +60,7 @@ class NetworkThemeSettings
                 foreach ($blogs as $blog) {
                     switch_to_blog($blog->blog_id);
 
+                    // Custom CSS
                     $css = wp_get_custom_css();
                     $atts = 'readonly';
 
@@ -66,16 +68,41 @@ class NetworkThemeSettings
                         $atts .= ' disabled';
                     }
 
+                    // Search Settings
+                    $search_settings = [
+                        'search_style' => 'Search Box Style',
+                        'search_type' => 'Search Type',
+                        'search_url' => 'Search URL',
+                        'search_param' => 'Search Term Parameter',
+                        'search_extra_params' => 'Extra Search Parameters',
+                        'search_external' => 'External Search Site',
+                    ];
+
+                    $search_settings_html = '';
+
+                    foreach ($search_settings as $search_setting => $search_setting_label) {
+                        $search_setting_val = get_theme_mod($search_setting);
+                        if (!empty($search_setting_val)) {
+                            $search_settings_html .= sprintf(
+                                '<div><strong>%s:</strong> %s</div>',
+                                $search_setting_label,
+                                $search_setting_val
+                            );
+                        }
+                    }
+
                     // Output form
                     echo sprintf(
                         '<tr>' .
                             '<td>%d</td><td>%s</td>' .
                             '<td><textarea rows="5" style="width: 100%%;" %s>%s</textarea></td>' .
+                            '<td>%s</td>' .
                         '</tr>',
                         $blog->blog_id,
                         $blog->domain,
                         $atts,
-                        $css
+                        $css,
+                        $search_settings_html
                     );
 
                     // Switch back to previous blog (main network blog)
