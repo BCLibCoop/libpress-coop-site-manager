@@ -14,7 +14,7 @@
  * @license           GPL-2.0-or-later
  */
 
-namespace BcLibCoop\SiteManager;
+namespace BCLibCoop\SiteManager;
 
 class LibPressSchema
 {

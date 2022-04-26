@@ -1,6 +1,6 @@
 <?php
 
-namespace BcLibCoop\SiteManager;
+namespace BCLibCoop\SiteManager;
 
 use function pll__;
 
