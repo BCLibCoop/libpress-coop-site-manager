@@ -18,7 +18,7 @@
  * @wordpress-plugin
  * Plugin Name:       Coop Site Manager
  * Description:       This is the common location for the other Coop Plugins to reside.
- * Version:           2.3.0
+ * Version:           2.3.1
  * Network:           true
  * Requires at least: 5.2
  * Requires PHP:      7.0
@@ -29,7 +29,7 @@
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
  */
 
-namespace BCLibCoop;
+namespace BcLibCoop\SiteManager;
 
 // No direct access
 defined('ABSPATH') || die(-1);

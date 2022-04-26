@@ -1,6 +1,6 @@
 <?php
 
-namespace BCLibCoop;
+namespace BcLibCoop\SiteManager;
 
 class NetworkThemeSettings
 {
