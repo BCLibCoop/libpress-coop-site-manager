@@ -69,25 +69,25 @@ class NetworkSitkaLibraries
                         // If no value for locg exists, set it to 1 (parent container for Sitka)
                         $lib_locg = get_option('_coop_sitka_lib_locg', 1);
 
-                        // Must be blank by default. Same shortname stem used when it agrees with Sitka catalogue subdomain.
-                        // Blogs with custom domains are the only ones targeted here.
+                        // Must be blank by default. Same shortname stem used when it agrees with Sitka catalogue
+                        // subdomain. Blogs with custom domains are the only ones targeted here.
                         $lib_cat_link = get_option('_coop_sitka_lib_cat_link', '');
 
                         // Output form
                         echo sprintf(
                             '<tr>' .
-                                '<td>%d</td><td>%s</td>' .
-                                '<td><input type="text" name="shortcode_%d" class="shortcode widefat" value="%s"></td>' .
-                                '<td><input type="text" name="locg_%d" class="shortcode widefat" value="%d"></td>' .
-                                '<td><input type="text" name="cat_link_%d" class=shortcode widefat" value="%s"></td>' .
-                                '</tr>',
+                                '<td>%1$d</td><td>%2$s</td>' .
+                                '<td>' .
+                                '<input type="text" name="shortcode_%1$d" class="shortcode widefat" value="%3$s">' .
+                                '</td><td>' .
+                                '<input type="text" name="locg_%1$d" class="shortcode widefat" value="%4$d">' .
+                                '</td><td>' .
+                                '<input type="text" name="cat_link_%1$d" class=shortcode widefat" value="%5$s">' .
+                                '</td></tr>',
                             $blog->blog_id,
                             $blog->domain,
-                            $blog->blog_id,
                             $lib_shortcode,
-                            $blog->blog_id,
                             $lib_locg,
-                            $blog->blog_id,
                             $lib_cat_link
                         );
 

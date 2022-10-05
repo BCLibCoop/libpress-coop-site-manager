@@ -9,7 +9,7 @@ class ContactInfoWidget extends \WP_Widget
     public function __construct()
     {
         parent::__construct(
-            CoopSiteManager::$slug . '-widget',
+            'coop-site-manager-widget',
             'Contact Information',
             ['classname' => 'CoopSiteManager_coop_site_manager_ci_widget']
         );
@@ -18,7 +18,7 @@ class ContactInfoWidget extends \WP_Widget
     public function form($instance)
     {
         echo '<p class="no-options-widget">This widget is configured via the <a href="' .
-        admin_url('admin.php?page=site-manager') . '">Site Manager</a></p>';
+        admin_url('admin.php?page=' . ContactInfo::$slug) . '">Site Manager</a></p>';
         return 'noform';
     }
 

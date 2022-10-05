@@ -1,39 +1,43 @@
 {
-    "name": "bclibcoop/coop-site-manager",
-    "description": "This is the common location for the other Coop Plugins to reside.",
-    "type": "wordpress-plugin",
-    "license": "GPL-2.0-or-later",
-    "keywords": [
-        "wordpress",
-        "wordpress-plugin"
-    ],
-    "homepage": "https://bc.libraries.coop/",
-    "authors": [
-        {
-            "name": "Eric Stainsby",
-            "email": "eric.stainsby@roaringsky.ca"
-        },
-        {
-            "name": "Ben Holt",
-            "email": "ben.holt@bc.libraries.coop"
-        },
-        {
-            "name": "Sam Edwards",
-            "email": "sam.edwards@bc.libraries.coop"
-        }
-    ],
-    "require": {
-        "php": ">=7.0",
-        "composer/installers": "^1.0 || ^2.0"
+  "name": "bclibcoop/coop-site-manager",
+  "description": "This is the common location for the other Coop Plugins to reside.",
+  "type": "wordpress-plugin",
+  "license": "GPL-2.0-or-later",
+  "keywords": [
+    "wordpress",
+    "wordpress-plugin"
+  ],
+  "homepage": "https://bc.libraries.coop/",
+  "authors": [
+    {
+      "name": "Eric Stainsby",
+      "email": "eric.stainsby@roaringsky.ca"
     },
-    "autoload": {
-        "psr-4": {
-            "BCLibCoop\\SiteManager\\": "inc/"
-        }
+    {
+      "name": "Jonathan Schatz",
+      "email": "jonathan.schatz@bc.libraries.coop"
     },
-    "config": {
-        "allow-plugins": {
-            "composer/installers": true
-        }
+    {
+      "name": "Ben Holt",
+      "email": "ben.holt@bc.libraries.coop"
+    },
+    {
+      "name": "Sam Edwards",
+      "email": "sam.edwards@bc.libraries.coop"
     }
+  ],
+  "require": {
+    "php": ">=7.0",
+    "composer/installers": "^1.0 || ^2.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "BCLibCoop\\SiteManager\\": "inc/"
+    }
+  },
+  "config": {
+    "allow-plugins": {
+      "composer/installers": true
+    }
+  }
 }

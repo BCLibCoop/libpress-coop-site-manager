@@ -112,7 +112,7 @@ class LibPressSchema
             $schema['openingHoursSpecification'] = [];
 
             foreach ($days as $day => $hours) {
-                if ($hours['notopen'] !== 'true') {
+                if (! filter_var($hours['notopen'], FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE)) {
                     foreach (['', '_2'] as $suffix) {
                         // Take a stab at converting these arbitrary text fields to a full time
                         foreach (['open', 'close'] as $hour) {

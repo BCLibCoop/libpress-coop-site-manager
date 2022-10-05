@@ -1,27 +1,27 @@
-<?php
+<?php // phpcs:ignore PSR1.Files.SideEffects.FoundWithSymbols
 
 /**
  * Coop Site Manager
  *
- * Creates the "Site Manager" admin menu page, as well as a Contact Info page
- * and a contact info widget
+ * Provides most functionality in the "Site Manager" section
  *
  * PHP Version 7
  *
  * @package           Coop Site Manager
  * @author            Erik Stainsby <eric.stainsby@roaringsky.ca>
  * @author            Ben Holt <ben.holt@bc.libraries.coop>
+ * @author            Jonathan Schatz <jonathan.schatz@bc.libraries.coop>
  * @author            Sam Edwards <sam.edwards@bc.libraries.coop>
  * @copyright         2013-2022 BC Libraries Cooperative
  * @license           GPL-2.0-or-later
  *
  * @wordpress-plugin
  * Plugin Name:       Coop Site Manager
- * Description:       This is the common location for the other Coop Plugins to reside.
- * Version:           2.3.2
+ * Description:       LibPress-specific Site Manager functionality
+ * Version:           3.0.0
  * Network:           true
- * Requires at least: 5.2
- * Requires PHP:      7.0
+ * Requires at least: 5.9
+ * Requires PHP:      7.4
  * Author:            BC Libraries Cooperative
  * Author URI:        https://bc.libraries.coop
  * Text Domain:       coop-site-manager
@@ -42,9 +42,23 @@ if (file_exists($composer = __DIR__ . '/vendor/autoload.php')) {
     require_once $composer;
 }
 
+/**
+ * Hooker earlier to ensure we can register the Site Manager menu first
+ */
 add_action('plugins_loaded', function () {
-    new CoopSiteManager();
-    new LibPressSchema();
-    new NetworkSitkaLibraries();
-    new NetworkThemeSettings();
-});
+    $classes = [
+        CoopSiteManager::class,
+        ContactInfo:: class,
+        CoopHours::class,
+        CoopLocationMap::class,
+        CoopMediaLink::class,
+        CoopMyAccount::class,
+        LibPressSchema::class,
+        NetworkSitkaLibraries::class,
+        NetworkThemeSettings::class,
+    ];
+
+    foreach ($classes as $class) {
+        new $class();
+    }
+}, 5);

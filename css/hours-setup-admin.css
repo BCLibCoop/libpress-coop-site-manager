@@ -1,0 +1,28 @@
+.hours-table {
+  max-width: 500px;
+}
+
+@media screen and (max-width: 782px) {
+  .hours-table th, .hours-table td {
+    display: table-cell !important;
+  }
+}
+
+.hours-table th[scope="col"] {
+  vertical-align: bottom;
+  text-align: left;
+  padding: 20px 10px 0 10px;
+}
+
+.hours-table th[scope="row"] {
+  padding: 5px 5px 5px 0;
+}
+
+.hours-table td {
+  padding: 5px;
+}
+
+.hours-table textarea {
+  width: 100%;
+  height: 8em;
+}
