@@ -9,6 +9,10 @@ class CoopHours extends AbstractSiteManagerPage
     public static $menu_title = 'Hours of Operation';
 
     protected $position = 1;
+    protected $widgets = [
+        'hours-widget' => Widget\CoopHoursWidget::class,
+        'brief-hours-widget' => Widget\CoopHoursBriefWidget::class,
+    ];
 
     public const DAYS = [
         [
@@ -41,15 +45,6 @@ class CoopHours extends AbstractSiteManagerPage
         ],
     ];
 
-    public function __construct()
-    {
-        parent::__construct();
-
-        add_filter('option_sidebars_widgets', [$this, 'legacySidebarConfig']);
-        add_filter('option_widget_hours-widget', [$this, 'legacyWidgetInstance']);
-        add_filter('option_widget_brief-hours-widget', [$this, 'legacyWidgetInstance']);
-    }
-
     public function init()
     {
         parent::init();
@@ -69,108 +64,12 @@ class CoopHours extends AbstractSiteManagerPage
         }
     }
 
-    /**
-     * Widget previously registered as a single widget, add an instance ID
-     * so they continue to function correctly
-     */
-    public function legacySidebarConfig($sidebars)
-    {
-        foreach ($sidebars as &$sidebar_widgets) {
-            if (is_array($sidebar_widgets)) {
-                foreach ($sidebar_widgets as &$widget) {
-                    if (
-                        in_array($widget, ['hours-widget', 'brief-hours-widget'])
-                        && ! preg_match('/-\d$/', $widget)
-                    ) {
-                        $widget = $widget . '-1';
-                        break;
-                    }
-                }
-            }
-        }
-
-        return $sidebars;
-    }
-
-    public function widgetsInit()
-    {
-        parent::widgetsInit();
-
-        register_widget(static::class . 'BriefWidget');
-    }
-
-    public function adminSettingsPageContent()
-    {
-        $days = get_option('coop-hours-days', []);
-        $notes = get_option('coop-hours-notes', '');
-
-        $out = [];
-
-        $out[] = '<table class="form-table hours-table">';
-
-        $out[] = '<colgroup>';
-        $out[] = '<col>';
-        $out[] = '<col span="4" class="hours">';
-        $out[] = '<col class="notopen">';
-        $out[] = '</colgroup>';
-
-        $out[] = '<tr>';
-        $out[] = '<td></td>';
-        $out[] = '<th scope="col">Open</th>';
-        $out[] = '<th scope="col">Close</th>';
-        $out[] = '<th scope="col">Re-open</th>';
-        $out[] = '<th scope="col">Re-close</th>';
-        $out[] = '<th scope="col">Not Open</th>';
-        $out[] = '</tr>';
-
-        foreach (self::DAYS as $day) {
-            $out[] = '<tr>';
-            $out[] = '<th scope="row">' . $day['full'] . ':</th>';
-
-            foreach (['open', 'close', 'open_2', 'close_2'] as $input) {
-                $id = $day['short'] . '_' . $input;
-                $notopen = filter_var(
-                    $days[$day['short']]['notopen'] ?? false,
-                    FILTER_VALIDATE_BOOL,
-                    FILTER_NULL_ON_FAILURE
-                );
-
-                $out[] = '<td>';
-                $out[] = sprintf(
-                    '<input type="text" size="8" id="%1$s" name="%1$s" value="%2$s">',
-                    $id,
-                    $days[$day['short']][$input] ?? ''
-                );
-                $out[] = '</td>';
-            }
-
-            $out[] = '<td>';
-            $out[] = sprintf(
-                '<input type="checkbox" id="%1$s" name="%1$s" value="true" %2$s>',
-                $day['short'] . '_notopen',
-                checked($notopen, true, false)
-            );
-            $out[] = '</td>';
-            $out[] = '</tr>';
-        }
-
-        $out[] = '<tr>';
-        $out[] = '<th>Notes</th>';
-        $out[] = '<td colspan="4"><textarea id="notes" name="notes">' . $notes . '</textarea></td>';
-        $out[] = '<td></td>';
-        $out[] = '</tr>';
-
-        $out[] = '</table>';
-
-        return $out;
-    }
-
     public function saveChangeCallback()
     {
         // Check the nonce field, if it doesn't verify report error and stop
         if (
-            ! isset($_POST['_wpnonce'])
-            || ! wp_verify_nonce($_POST['_wpnonce'], static::$slug . '_submit')
+            !isset($_POST['_wpnonce'])
+            || !wp_verify_nonce($_POST['_wpnonce'], static::$slug . '_submit')
         ) {
             wp_die('Sorry, there was an error handling your form submission.');
         }
@@ -200,5 +99,37 @@ class CoopHours extends AbstractSiteManagerPage
 
         wp_redirect(admin_url('admin.php?page=' . static::$slug));
         exit;
+    }
+
+    /**
+     * Sanitize and clean data, deals with old unsanizitzed DB data and ensures
+     * that 'notopen' is a bool
+     */
+    public static function getDaysData()
+    {
+        $raw_days = array_filter(get_option('coop-hours-days', []));
+        $days = [];
+
+        if (!empty($raw_days)) {
+            foreach (self::DAYS as $day_arr) {
+                $day = $day_arr['short'];
+
+                if (!empty($raw_days[$day])) {
+                    $days[$day] = [
+                        'open' => sanitize_text_field($raw_days[$day]['open'] ?? ''),
+                        'close' => sanitize_text_field($raw_days[$day]['close'] ?? ''),
+                        'open_2' => sanitize_text_field($raw_days[$day]['open_2'] ?? ''),
+                        'close_2' => sanitize_text_field($raw_days[$day]['close_2'] ?? ''),
+                        'notopen' => filter_var(
+                            $raw_days[$day]['notopen'] ?? false,
+                            FILTER_VALIDATE_BOOL,
+                            FILTER_NULL_ON_FAILURE
+                        )
+                    ];
+                }
+            }
+        }
+
+        return $days;
     }
 }

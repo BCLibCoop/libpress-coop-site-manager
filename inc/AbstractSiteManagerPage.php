@@ -9,9 +9,11 @@ abstract class AbstractSiteManagerPage
     public static $slug;
     public static $page_title;
     public static $menu_title;
+    public static $shortcode;
 
     protected $languages;
     protected $position = null;
+    protected $widgets = [];
 
     public function __construct()
     {
@@ -23,13 +25,34 @@ abstract class AbstractSiteManagerPage
             ],
         ];
 
+        if (empty($this::$shortcode)) {
+            $this::$shortcode = $this::$slug;
+        }
+
         add_action('init', [$this, 'init']);
 
-        if (class_exists(static::class . 'Widget', true)) {
+        /**
+         * Try and find a widget class matching this class, but also allow for
+         * the class to already be specified by the extending class
+         */
+        $matching_widget = __NAMESPACE__ . '\\Widget\\' . (new \ReflectionClass($this))->getShortName() . 'Widget';
+
+        if (class_exists($matching_widget) && !in_array($matching_widget, $this->widgets)) {
+            $this->widgets[static::$slug . '-widget'] = $matching_widget;
+        }
+
+        if (!empty($this->widgets)) {
             add_action('widgets_init', [$this, 'widgetsInit']);
 
             add_filter('option_sidebars_widgets', [$this, 'legacySidebarConfig']);
-            add_filter('option_widget_' . static::$slug . '-widget', [$this, 'legacyWidgetInstance']);
+
+            foreach ($this->widgets as $widget_slug => $widget_class) {
+                add_filter('option_widget_' . $widget_slug, [$this, 'legacyWidgetInstance']);
+            }
+        }
+
+        if (file_exists(plugin_dir_path(SITEMANAGER_PLUGIN_FILE) . "views/shortcode/{$this::$slug}.php")) {
+            add_shortcode($this::$shortcode, [$this, 'doShortcode']);
         }
     }
 
@@ -78,7 +101,9 @@ abstract class AbstractSiteManagerPage
 
     public function widgetsInit()
     {
-        register_widget(static::class . 'Widget');
+        foreach ($this->widgets as $widget_slug => $widget_class) {
+            register_widget($widget_class);
+        }
     }
 
     /**
@@ -91,7 +116,7 @@ abstract class AbstractSiteManagerPage
             if (is_array($sidebar_widgets)) {
                 foreach ($sidebar_widgets as &$widget) {
                     if (
-                        in_array($widget, [static::$slug . '-widget'])
+                        in_array($widget, array_keys($this->widgets))
                         && ! preg_match('/-\d$/', $widget)
                     ) {
                         $widget = $widget . '-1';
@@ -145,7 +170,13 @@ abstract class AbstractSiteManagerPage
 
         $out[] = '<form action="' . esc_url(admin_url('admin-post.php')) . '" method="post">';
 
-        $out = array_merge($out, $this->adminSettingsPageContent());
+        $content = $this->adminSettingsPageContent();
+
+        if (is_array($content)) {
+            $out = array_merge($out, $content);
+        } else {
+            $out[] = $content;
+        }
 
         $out[] = '<p class="submit">';
         $out[] = '<input type="hidden" name="action" value="' . static::$slug . '_submit">';
@@ -159,7 +190,25 @@ abstract class AbstractSiteManagerPage
         echo implode("\n", $out);
     }
 
-    abstract public function saveChangeCallback();
+    /**
+     * Return the output of the shortcode template
+     */
+    public function doShortcode()
+    {
+        ob_start();
+        require plugin_dir_path(SITEMANAGER_PLUGIN_FILE) . "views/shortcode/{$this::$slug}.php";
+        return ob_get_clean();
+    }
 
-    abstract public function adminSettingsPageContent();
+    /**
+     * Return the output of the shortcode template
+     */
+    public function adminSettingsPageContent()
+    {
+        ob_start();
+        require plugin_dir_path(SITEMANAGER_PLUGIN_FILE) . "views/admin/{$this::$slug}.php";
+        return ob_get_clean();
+    }
+
+    abstract public function saveChangeCallback();
 }

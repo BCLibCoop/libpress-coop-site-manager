@@ -45,7 +45,7 @@ class LibPressSchema
     private function generateSchema()
     {
         $info = get_option('coop-ci-info', []);
-        $days = get_option('coop-hours-days', []);
+        $days = CoopHours::getDaysData();
         // $hours_note = get_option('coop-hours-notes', '');
 
         $schema = [
@@ -112,7 +112,7 @@ class LibPressSchema
             $schema['openingHoursSpecification'] = [];
 
             foreach ($days as $day => $hours) {
-                if (! filter_var($hours['notopen'], FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE)) {
+                if (! $hours['notopen']) {
                     foreach (['', '_2'] as $suffix) {
                         // Take a stab at converting these arbitrary text fields to a full time
                         foreach (['open', 'close'] as $hour) {
