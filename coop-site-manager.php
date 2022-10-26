@@ -53,7 +53,7 @@ add_action('plugins_loaded', function () {
         CoopLocationMap::class,
         CoopMediaLink::class,
         CoopMyAccount::class,
-        // InfoBanner::class,
+        InfoBanner::class,
         LibPressSchema::class,
         NetworkSitkaLibraries::class,
         NetworkThemeSettings::class,

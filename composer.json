@@ -28,12 +28,16 @@
   ],
   "require": {
     "php": ">=7.0",
-    "composer/installers": "^1.0 || ^2.0"
+    "composer/installers": "^1.0 || ^2.0",
+    "stoutlogic/acf-builder": "^1.12"
   },
   "autoload": {
     "psr-4": {
       "BCLibCoop\\SiteManager\\": "inc/"
-    }
+    },
+    "files": [
+      "inc/functions.php"
+    ]
   },
   "config": {
     "allow-plugins": {

@@ -11,9 +11,17 @@ abstract class AbstractSiteManagerPage
     public static $menu_title;
     public static $shortcode;
 
+    /**
+     * Potential Languages
+     *
+     * @var object[]
+     */
     protected $languages;
+
     protected $position = null;
     protected $widgets = [];
+    protected $settings_api = false;
+    protected $capability = 'manage_local_site';
 
     public function __construct()
     {
@@ -25,11 +33,16 @@ abstract class AbstractSiteManagerPage
             ],
         ];
 
+        // Check if polylang is available and if so use its list of languages
+        if (function_exists('pll_languages_list')) {
+            $this->languages = pll_languages_list('fields');
+        }
+
         if (empty($this::$shortcode)) {
             $this::$shortcode = $this::$slug;
         }
 
-        add_action('init', [$this, 'init']);
+        add_action('init', [$this, 'init'], 4);
 
         /**
          * Try and find a widget class matching this class, but also allow for
@@ -58,17 +71,22 @@ abstract class AbstractSiteManagerPage
 
     public function init()
     {
-        // Check if polylang is available and if so use its list of languages
-        if (function_exists('pll_languages_list')) {
-            $this->languages = pll_languages_list('fields');
-        }
-
         if (is_admin()) {
             add_action('admin_menu', [$this, 'addMenu']);
-            add_action('admin_post_' . static::$slug . '_submit', [$this, 'saveChangeCallback']);
 
             add_action('admin_enqueue_scripts', [$this, 'adminEnqueueStylesScripts']);
+
+            if ($this->settings_api) {
+                add_filter('option_page_capability_' . static::$slug, [$this, 'settingsApiCapability']);
+            } else {
+                add_action('admin_post_' . static::$slug . '_submit', [$this, 'saveChangeCallback']);
+            }
         }
+    }
+
+    public function settingsApiCapability()
+    {
+        return $this->capability;
     }
 
     public function adminEnqueueStylesScripts()
@@ -76,26 +94,31 @@ abstract class AbstractSiteManagerPage
         $screen = get_current_screen();
 
         if ($screen->id === CoopSiteManager::$slug . '_page_' . static::$slug) {
-            $js_file = 'js/' . static::$slug . '-admin.js';
-            $css_file = 'css/' . static::$slug . '-admin.css';
+            $this->adminStylesScripts();
+        }
+    }
 
-            if (file_exists(plugin_dir_path(SITEMANAGER_PLUGIN_FILE) . $js_file)) {
-                wp_enqueue_script(
-                    static::$slug . '-admin-js',
-                    plugins_url($js_file, SITEMANAGER_PLUGIN_FILE),
-                    ['jquery'],
-                    filemtime(plugin_dir_path(SITEMANAGER_PLUGIN_FILE) . $js_file)
-                );
-            }
+    public function adminStylesScripts()
+    {
+        $js_file = 'js/' . static::$slug . '-admin.js';
+        $css_file = 'css/' . static::$slug . '-admin.css';
 
-            if (file_exists(plugin_dir_path(SITEMANAGER_PLUGIN_FILE) . $css_file)) {
-                wp_enqueue_style(
-                    static::$slug,
-                    plugins_url($css_file, SITEMANAGER_PLUGIN_FILE),
-                    [],
-                    filemtime(plugin_dir_path(SITEMANAGER_PLUGIN_FILE) . $css_file)
-                );
-            }
+        if (file_exists(plugin_dir_path(SITEMANAGER_PLUGIN_FILE) . $js_file)) {
+            wp_enqueue_script(
+                static::$slug . '-admin-js',
+                plugins_url($js_file, SITEMANAGER_PLUGIN_FILE),
+                ['jquery'],
+                filemtime(plugin_dir_path(SITEMANAGER_PLUGIN_FILE) . $js_file)
+            );
+        }
+
+        if (file_exists(plugin_dir_path(SITEMANAGER_PLUGIN_FILE) . $css_file)) {
+            wp_enqueue_style(
+                static::$slug,
+                plugins_url($css_file, SITEMANAGER_PLUGIN_FILE),
+                [],
+                filemtime(plugin_dir_path(SITEMANAGER_PLUGIN_FILE) . $css_file)
+            );
         }
     }
 
@@ -148,16 +171,25 @@ abstract class AbstractSiteManagerPage
             CoopSiteManager::$slug,
             static::$page_title,
             static::$menu_title,
-            'manage_local_site',
+            $this->capability,
             static::$slug,
             [$this, 'adminSettingsPage'],
             $this->position
         );
+
+        if ($this->settings_api) {
+            add_settings_section(
+                static::$slug . '-settings',
+                null,
+                '__return_false',
+                static::$slug
+            );
+        }
     }
 
     public function adminSettingsPage()
     {
-        if (!current_user_can('manage_local_site')) {
+        if (!current_user_can($this->capability)) {
             wp_die('You do not have required permissions to view this page');
         }
 
@@ -168,22 +200,32 @@ abstract class AbstractSiteManagerPage
         $out[] = '<h1 class="wp-heading-inline">' . static::$page_title . '</h1>';
         $out[] = '<hr class="wp-header-end">';
 
-        $out[] = '<form action="' . esc_url(admin_url('admin-post.php')) . '" method="post">';
+        $out[] = '<form action="'
+            . esc_url(admin_url($this->settings_api ? 'options.php' : 'admin-post.php')) . '" method="post">';
 
-        $content = $this->adminSettingsPageContent();
-
-        if (is_array($content)) {
-            $out = array_merge($out, $content);
+        if ($this->settings_api) {
+            ob_start();
+            do_settings_sections(static::$slug);
+            $out[] = ob_get_clean();
         } else {
-            $out[] = $content;
+            $content = $this->adminSettingsPageContent();
+
+            if (is_array($content)) {
+                $out = array_merge($out, $content);
+            } else {
+                $out[] = $content;
+            }
         }
 
-        $out[] = '<p class="submit">';
-        $out[] = '<input type="hidden" name="action" value="' . static::$slug . '_submit">';
-        $out[] = wp_nonce_field(static::$slug . '_submit');
-        $out[] = '<input type="submit" value="Save Changes" class="button button-primary" id="'
-                 . static::$slug . '-submit" name="submit">';
-        $out[] = '</p>';
+        if ($this->settings_api) {
+            ob_start();
+            settings_fields(static::$slug);
+            $out[] = ob_get_clean();
+        } else {
+            $out[] = '<input type="hidden" name="action" value="' . static::$slug . '_submit">';
+            $out[] = wp_nonce_field(static::$slug . '_submit');
+        }
+        $out[] = get_submit_button('', 'primary', 'submit', true, ['id' => static::$slug . '-submit']);
         $out[] = '</form>';
         $out[] = '</div>';
 
