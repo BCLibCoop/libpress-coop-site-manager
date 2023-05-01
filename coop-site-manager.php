@@ -58,6 +58,7 @@ add_action('plugins_loaded', function () {
         LibPressSchema::class,
         NetworkSitkaLibraries::class,
         NetworkThemeSettings::class,
+        EventCalendarBeforeAfter::class,
     ];
 
     foreach ($classes as $class) {
