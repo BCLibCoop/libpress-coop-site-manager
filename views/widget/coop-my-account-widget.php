@@ -17,7 +17,13 @@ if (function_exists('pll_languages_list')) {
 <?= $before_widget ?>
 
 <?= $before_title ?>
-<a href="<?= $link_uri ?>"><?= $link_text ?></a>
+
+<?php if (!empty($link_uri) && !empty($link_text)) : ?>
+    <a href="<?= $link_uri ?>"><?= $link_text ?></a>
+<?php else : ?>
+    <!-- No account link/text set -->
+<?php endif; ?>
+
 <?= $after_title ?>
 
 <?= $after_widget ?>
