@@ -17,7 +17,7 @@ class NetworkThemeSettings
             'header_text' => 'Title and Tagline',
             'logo_alignment' => 'Logo Alignment',
             'logo_size' => 'Logo Size',
-            'custom_logo' => 'Logo ID',
+            'custom_logo' => 'Logo Image',
             'header_image' => 'Header Image',
             'background_image' => 'Background Image',
             'show_sidebar' => 'Show Sidebar',
@@ -30,7 +30,8 @@ class NetworkThemeSettings
     }
 
     /**
-     * Add submenu page for managing the Sitka libraries, their library code, catalogue links, etc.
+     * Add submenu page for managing the Sitka libraries, their library code,
+     * catalogue links, etc.
      */
     public function networkAdminMenu()
     {
@@ -44,9 +45,10 @@ class NetworkThemeSettings
         );
     }
 
-    /*
-    * Network Admin configuration page for setting each library's Sitka Shortcode, Sitka Locale, and Catalogue Domain.
-    */
+    /**
+     * Network Admin configuration page for setting each library's Sitka
+     * Shortcode, Sitka Locale, and Catalogue Domain.
+     */
     public function networkLibraryPage()
     {
         if (!is_super_admin()) {
@@ -113,8 +115,23 @@ class NetworkThemeSettings
                                     $setting_val = var_export((bool) $setting_val, true);
                                 }
 
-                                // Trim image URLs down a bit
+                                if ($attachment_id = attachment_url_to_postid($setting_val)) {
+                                    $setting_val = $attachment_id;
+                                }
+
+                                // Trim URLs down a bit
                                 $setting_val = str_replace(home_url(), '', $setting_val);
+
+                                if (
+                                    is_numeric($setting_val)
+                                    && $edit_link = get_edit_post_link((int) $setting_val, 'raw')
+                                ) {
+                                    $setting_val = sprintf(
+                                        '<a href="%s">%s</a>',
+                                        $edit_link,
+                                        $setting_val
+                                    );
+                                }
 
                                 $settings_html[$settings_section_name] .= sprintf(
                                     '<div><strong>%s:</strong> %s</div>',
@@ -125,18 +142,33 @@ class NetworkThemeSettings
                         }
                     }
 
+                    // Row actions
+                    $actions = [
+                        '<a href="' . esc_url(home_url('/')) . '" rel="bookmark">Visit</a>',
+                        '<a href="' . esc_url(network_admin_url('site-info.php?id=' . $blog->blog_id)) . '">Edit</a>',
+                        '<a href="' . esc_url(admin_url()) . '" class="edit">Dashboard</a>',
+                        '<a href="'
+                            . esc_url(add_query_arg('autofocus[section]', 'custom_css', admin_url('customize.php')))
+                            . '">Edit CSS</a>'
+                    ];
+
+                    $row_actions = '<div class="row-actions"><span>';
+                    $row_actions .= join(' | </span><span>', $actions);
+                    $row_actions .= '</span></div>';
+
                     // Output form
                     echo sprintf(
                         '<tr>' .
                             '<td class="column-posts">%d</td>' .
-                            '<td><a href="%s">%s</a></td>' .
+                            '<td class="has-row-actions"><strong><a href="%s">%s</a></strong>%s</td>' .
                             '<td>%s</td>' .
                             '<td>%s</td>' .
                             '<td>%s</td>' .
                         '</tr>',
                         $blog->blog_id,
-                        home_url(),
+                        esc_url(home_url('/')),
                         $blog->domain,
+                        $row_actions,
                         $settings_html['css'],
                         $settings_html['search'],
                         $settings_html['style'],
