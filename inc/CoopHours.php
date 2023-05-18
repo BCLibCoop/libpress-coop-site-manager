@@ -52,13 +52,13 @@ class CoopHours extends AbstractSiteManagerPage
         // Register strings for translation via polylang
         if (function_exists('pll_register_string')) {
             pll_register_string('Widget Title', 'Hours of Operation', 'coop-hours');
-            pll_register_string('Abreviated Monday', 'Mon', 'coop-hours');
-            pll_register_string('Abreviated Tuesday', 'Tue', 'coop-hours');
-            pll_register_string('Abreviated Wednesday', 'Wed', 'coop-hours');
-            pll_register_string('Abreviated Thursday', 'Thu', 'coop-hours');
-            pll_register_string('Abreviated Friday', 'Fri', 'coop-hours');
-            pll_register_string('Abreviated Saturday', 'Sat', 'coop-hours');
-            pll_register_string('Abreviated Sunday', 'Sun', 'coop-hours');
+            pll_register_string('Abbreviated Monday', 'Mon', 'coop-hours');
+            pll_register_string('Abbreviated Tuesday', 'Tue', 'coop-hours');
+            pll_register_string('Abbreviated Wednesday', 'Wed', 'coop-hours');
+            pll_register_string('Abbreviated Thursday', 'Thu', 'coop-hours');
+            pll_register_string('Abbreviated Friday', 'Fri', 'coop-hours');
+            pll_register_string('Abbreviated Saturday', 'Sat', 'coop-hours');
+            pll_register_string('Abbreviated Sunday', 'Sun', 'coop-hours');
             pll_register_string('Closed', 'Closed', 'coop-hours');
             pll_register_string('Hours', 'Hours:', 'coop-hours');
         }
@@ -94,15 +94,29 @@ class CoopHours extends AbstractSiteManagerPage
 
         $notes = sanitize_textarea_field($_POST['notes']);
 
+        $show_all = filter_var(
+            $_POST['coop-hours-show-all'] ?? false,
+            FILTER_VALIDATE_BOOL,
+            FILTER_NULL_ON_FAILURE
+        );
+        $full_names = filter_var(
+            $_POST['coop-hours-full-names'] ?? false,
+            FILTER_VALIDATE_BOOL,
+            FILTER_NULL_ON_FAILURE
+        );
+
         update_option('coop-hours-days', $days);
         update_option('coop-hours-notes', $notes);
+
+        update_option('coop-hours-show-all', $show_all);
+        update_option('coop-hours-notes-full-names', $full_names);
 
         wp_redirect(admin_url('admin.php?page=' . static::$slug));
         exit;
     }
 
     /**
-     * Sanitize and clean data, deals with old unsanizitzed DB data and ensures
+     * Sanitize and clean data, deals with old unsanitized DB data and ensures
      * that 'notopen' is a bool
      */
     public static function getDaysData()

@@ -5,6 +5,18 @@ use BCLibCoop\SiteManager\CoopHours;
 extract($args);
 
 $days = CoopHours::getDaysData();
+
+$show_all = filter_var(
+    get_option('coop-hours-show-all', false),
+    FILTER_VALIDATE_BOOL,
+    FILTER_NULL_ON_FAILURE
+);
+
+$full_names = filter_var(
+    get_option('coop-hours-notes-full-names', false),
+    FILTER_VALIDATE_BOOL,
+    FILTER_NULL_ON_FAILURE
+);
 ?>
 
 <?= $before_widget ?>
@@ -14,10 +26,20 @@ $days = CoopHours::getDaysData();
 
         <?php foreach (CoopHours::DAYS as $index => $day) : ?>
             <li class="hours-day <?= $day['full'] ?>">
-                <span class="hours-dow"><?php _e(ucfirst($day['short']), 'pll_string'); ?></span>
+                <?php if ($full_names) : ?>
+                    <span class="hours-dow">
+                        <?php _e(ucfirst($day['full']), 'pll_string'); ?>
+                    </span>
+                <?php else : ?>
+                    <abbr class="hours-dow" title="<?= $day['full'] ?>">
+                        <?php _e(ucfirst($day['short']), 'pll_string'); ?>
+                    </abbr>
+                <?php endif; ?>
 
-                <?php if (
-                    $index === array_key_last(CoopHours::DAYS)
+                <?php
+                if (
+                    $show_all
+                    || $index === array_key_last(CoopHours::DAYS)
                     || !($days[$day['short']]['notopen'] && $days[CoopHours::DAYS[$index + 1]['short']]['notopen'])
                     && !empty(array_diff_assoc($days[$day['short']], $days[CoopHours::DAYS[$index + 1]['short']]))
                 ) : ?>

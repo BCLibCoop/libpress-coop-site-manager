@@ -2,6 +2,8 @@
 
 $days = get_option('coop-hours-days', []);
 $notes = get_option('coop-hours-notes', '');
+$show_all = get_option('coop-hours-show-all', false);
+$full_names = get_option('coop-hours-notes-full-names', false);
 ?>
 
 <table class="form-table hours-table">
@@ -61,5 +63,28 @@ $notes = get_option('coop-hours-notes', '');
         </td>
         <td></td>
     </tr>
+</table>
 
+<h2 class="title">Brief Hours Widget</h2>
+
+<table class="form-table">
+    <tr>
+        <th scope="row">Show Full Names</th>
+        <td>
+            <label for="full_names">
+                <input type="checkbox" id="full_names" name="coop-hours-full-names" value="1" <?php checked($full_names) ?>>
+                Show full names of days rather than abbreviate versions
+            </label>
+        </td>
+    </tr>
+
+    <tr>
+        <th scope="row">Show Days Separately</th>
+        <td>
+            <label for="show_all">
+                <input type="checkbox" id="show_all" name="coop-hours-show-all" value="1" <?php checked($show_all) ?>>
+                Don't group consecutive days that have the same hours together
+            </label>
+        </td>
+    </tr>
 </table>
