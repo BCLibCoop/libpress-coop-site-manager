@@ -5,8 +5,8 @@ namespace BCLibCoop\SiteManager;
 class CoopMediaLink extends AbstractSiteManagerPage
 {
     public static $slug = 'coop-media-links';
-    public static $page_title = 'Media Link';
-    public static $menu_title = 'Media Link';
+    public static $page_title = 'Search Box Link';
+    public static $menu_title = 'Search Box Link';
     public static $shortcode = 'coop-media-link';
 
     protected $position = 3;

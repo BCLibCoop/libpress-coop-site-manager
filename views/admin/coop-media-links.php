@@ -8,7 +8,7 @@
 
         <tr valign="top">
             <th scope="row">
-                <label for="<?= $prefix ?>-uri"><?= $curlang->name ?> Account Login URI:</label>
+                <label for="<?= $prefix ?>-uri"><?= $curlang->name ?> Search Box Link URL:</label>
             </th>
             <td>
                 <input type="text" id="<?= $prefix ?>-uri" name="<?= $prefix ?>-uri"
@@ -18,7 +18,7 @@
 
         <tr valign="top">
             <th scope="row">
-                <label for="<?= $prefix ?>-label-text"><?= $curlang->name ?> Account Login Label:</label>
+                <label for="<?= $prefix ?>-label-text"><?= $curlang->name ?> Search Box Link Label:</label>
             </th>
             <td>
                 <input type="text" id="<?= $prefix ?>-label-text" name="<?= $prefix ?>-label-text"
