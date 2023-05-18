@@ -25,7 +25,7 @@ abstract class AbstractSiteManagerPage
 
     public function __construct()
     {
-        // Dummy langauges option for when Polylang is not in use
+        // Dummy languages option for when Polylang is not in use
         $this->languages = [
             (object) [
                 'locale' => '',

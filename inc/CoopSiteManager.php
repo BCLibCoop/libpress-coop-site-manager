@@ -2,8 +2,6 @@
 
 namespace BCLibCoop\SiteManager;
 
-use function pll_register_string;
-
 class CoopSiteManager
 {
     private static $instance;
