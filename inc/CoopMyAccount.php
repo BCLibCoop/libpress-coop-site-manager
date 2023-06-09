@@ -21,8 +21,10 @@ class CoopMyAccount extends AbstractSiteManagerPage
         }
 
         foreach ($this->languages as $curlang) {
-            $link_text = sanitize_text_field($_POST[static::$slug . $curlang->locale . '-label-text']);
-            $link_uri = sanitize_text_field($_POST[static::$slug . $curlang->locale . '-uri']);
+            $link_text = stripslashes($_POST[static::$slug . $curlang->locale . '-label-text']);
+            $link_text = sanitize_text_field($link_text);
+            $link_uri = stripslashes($_POST[static::$slug . $curlang->locale . '-uri']);
+            $link_uri = sanitize_text_field($link_uri);
 
             update_option(static::$slug . $curlang->locale . '-label-text', $link_text);
             update_option(static::$slug . $curlang->locale . '-uri', $link_uri);

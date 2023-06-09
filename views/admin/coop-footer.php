@@ -4,7 +4,7 @@
     <?php foreach ($this->languages as $curlang) : ?>
         <?php
         $option = implode('-', array_filter([static::$slug, $curlang->locale, 'footer-text']));
-        $text = get_option($option);
+        $text = stripslashes(get_option($option));
         ?>
 
         <tr valign="top">
@@ -13,7 +13,7 @@
             </th>
             <td>
                 <input type="text" id="<?= $option ?>" name="<?= $option ?>"
-                    value="<?= $text ?>" class="large-text">
+                    value="<?= esc_attr($text) ?>" class="large-text">
             </td>
         </tr>
     <?php endforeach; ?>

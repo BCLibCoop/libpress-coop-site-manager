@@ -51,7 +51,7 @@ class ContactInfo extends AbstractSiteManagerPage
         $info = [];
 
         foreach (static::$fields as $field_key => $field_name) {
-            $info[$field_key] = !empty($_POST[$field_key]) ? sanitize_text_field($_POST[$field_key]) : '';
+            $info[$field_key] = !empty($_POST[$field_key]) ? sanitize_text_field(stripslashes($_POST[$field_key])) : '';
         }
 
         update_option('coop-ci-info', $info);

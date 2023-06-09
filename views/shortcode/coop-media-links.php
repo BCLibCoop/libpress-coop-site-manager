@@ -9,4 +9,4 @@ if (function_exists('pll_languages_list')) {
     $link_uri = get_option(static::$slug . '-uri');
 }
 ?>
-<a class="coop-media-link overdrive-link" href="<?= $link_uri ?>"><?= $link_text ?></a>
+<a class="coop-media-link overdrive-link" href="<?= esc_attr($link_uri) ?>"><?= $link_text ?></a>

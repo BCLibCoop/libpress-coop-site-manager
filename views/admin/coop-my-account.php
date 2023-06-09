@@ -2,7 +2,7 @@
     <?php foreach ($this->languages as $curlang) : ?>
         <?php
         $link_text = stripslashes(get_option(static::$slug . $curlang->locale . '-label-text'));
-        $link_uri = get_option(static::$slug . $curlang->locale . '-uri');
+        $link_uri = stripslashes(get_option(static::$slug . $curlang->locale . '-uri'));
         $prefix = static::$slug . $curlang->locale;
         ?>
 
@@ -12,7 +12,7 @@
             </th>
             <td>
                 <input type="text" id="<?= $prefix ?>-uri" name="<?= $prefix ?>-uri"
-                    value="<?= $link_uri ?>" class="regular-text">
+                    value="<?= esc_attr($link_uri) ?>" class="regular-text">
             </td>
         </tr>
 
@@ -22,7 +22,7 @@
             </th>
             <td>
                 <input type="text" id="<?= $prefix ?>-label-text" name="<?= $prefix ?>-label-text"
-                    value="<?= $link_text ?>" class="regular-text">
+                    value="<?= esc_attr($link_text) ?>" class="regular-text">
             </td>
         </tr>
     <?php endforeach; ?>

@@ -23,7 +23,7 @@ class FooterTextWidget extends AbstractCoopWidget
             function_exists('pll_languages_list') ? get_locale() : '',
             'footer-text'
         ]));
-        $footer_text = get_option($option);
+        $footer_text = stripslashes(get_option($option));
 
         // Text substitutions
         $footer_text = preg_replace_callback('/\{\{(.*)\}\}/', function ($matches) {

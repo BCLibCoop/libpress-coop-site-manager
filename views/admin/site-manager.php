@@ -13,7 +13,7 @@ $info = get_option('coop-ci-info', array_fill_keys(array_keys(static::$fields), 
             </th>
             <td>
                 <input type="text" id="coop-ci-<?= $field_key ?>" name="<?= $field_key ?>"
-                    class="coop-ci regular-text" value="<?= $info[$field_key] ?>">
+                    class="coop-ci regular-text" value="<?= esc_attr($info[$field_key]) ?>">
             </td>
         </tr>
     <?php endforeach; ?>

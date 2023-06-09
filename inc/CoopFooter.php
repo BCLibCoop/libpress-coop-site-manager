@@ -37,7 +37,7 @@ class CoopFooter extends AbstractSiteManagerPage
 
         foreach ($this->languages as $curlang) {
             $option = implode('-', array_filter([static::$slug, $curlang->locale, 'footer-text']));
-            $text = sanitize_text_field($_POST[$option]);
+            $text = sanitize_text_field(stripslashes($_POST[$option]));
 
             update_option($option, $text);
         }

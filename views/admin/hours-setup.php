@@ -1,7 +1,7 @@
 <?php
 
 $days = get_option('coop-hours-days', []);
-$notes = get_option('coop-hours-notes', '');
+$notes = stripslashes(get_option('coop-hours-notes', ''));
 $show_all = get_option('coop-hours-show-all', false);
 $full_names = get_option('coop-hours-notes-full-names', false);
 ?>

@@ -12,13 +12,14 @@ class CoopLocationMap extends AbstractSiteManagerPage
 
     public static function getMapData()
     {
-        $address = get_option('coop-ci-info');
+        $address = wp_unslash(get_option('coop-ci-info'));
 
         $data = get_option('_' . static::$slug . '_geodata', [
             'zoom' => 14,
             'width' => 300,
             'height' => 300,
         ]);
+        $data = wp_unslash($data);
 
         // Just get numbers. Width, height, and zoom should all be ints
         array_walk($data, function (&$data_item) {
@@ -65,9 +66,9 @@ class CoopLocationMap extends AbstractSiteManagerPage
         }
 
         $data = [
-            'zoom' => sanitize_text_field($_POST['zoom']),
-            'width' => sanitize_text_field($_POST['map-width']),
-            'height' => sanitize_text_field($_POST['map-height']),
+            'zoom' => sanitize_text_field(stripslashes($_POST['zoom'])),
+            'width' => sanitize_text_field(stripslashes($_POST['map-width'])),
+            'height' => sanitize_text_field(stripslashes($_POST['map-height'])),
         ];
 
         // Just get numbers. Width, height, and zoom should all be ints

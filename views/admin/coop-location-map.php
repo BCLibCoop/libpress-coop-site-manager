@@ -32,7 +32,7 @@ extract(CoopLocationMap::getMapData());
                 <label for="zoom">Magnification</label>
             </th>
             <td>
-                <input type="text" id="zoom" name="zoom" class="narrow-text" value="<?= $data['zoom'] ?>">
+                <input type="text" id="zoom" name="zoom" class="narrow-text" value="<?= esc_attr($data['zoom']) ?>">
                 <p class="description">Recommended between 12 and 16. Default: 14</p>
             </td>
         </tr>
@@ -42,7 +42,7 @@ extract(CoopLocationMap::getMapData());
                 <label for="map-width">Map Width</label>
             </th>
             <td>
-                <input type="text" id="map-width" name="map-width" class="narrow-text" value="<?= $data['width'] ?>">
+                <input type="text" id="map-width" name="map-width" class="narrow-text" value="<?= esc_attr($data['width']) ?>">
                 <p class="description">Map width in pixels (don't include 'px'). Default: 300</p>
             </td>
         </tr>
@@ -52,7 +52,7 @@ extract(CoopLocationMap::getMapData());
                 <label for="map-height">Map Height</label>
             </th>
             <td>
-                <input type="text" id="map-height" name="map-height" class="narrow-text" value="<?= $data['height'] ?>">
+                <input type="text" id="map-height" name="map-height" class="narrow-text" value="<?= esc_attr($data['height']) ?>">
                 <p class="description">Map height in pixels (don't include 'px'). Default: 300</p>
             </td>
         </tr>
@@ -60,5 +60,5 @@ extract(CoopLocationMap::getMapData());
     </tbody>
 </table>
 
-<iframe id="coop-location-map-preview" width="<?= $data['width'] ?>" height="<?= $data['height'] ?>"
-    style="border:0" src="<?= $gmaps_url ?>" allowfullscreen></iframe>
+<iframe id="coop-location-map-preview" width="<?= esc_attr($data['width']) ?>" height="<?= esc_attr($data['height']) ?>"
+    style="border:0" src="<?= esc_attr($gmaps_url) ?>" allowfullscreen></iframe>

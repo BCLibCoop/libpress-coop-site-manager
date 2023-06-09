@@ -2,7 +2,7 @@
 
 extract($args);
 
-$info = get_option('coop-ci-info', []);
+$info = wp_unslash(get_option('coop-ci-info', []));
 ?>
 
 <?= $before_widget; ?>
@@ -13,7 +13,7 @@ $info = get_option('coop-ci-info', []);
     <div class="coop-contact-info">
 
         <?php if (!empty($info['email'])) : ?>
-            <a href="mailto:<?= $info['email'] ?>"><?php _e('Email Us', 'pll_string') ?></a><br />
+            <a href="mailto:<?= esc_attr($info['email']) ?>"><?php _e('Email Us', 'pll_string') ?></a><br />
         <?php endif; ?>
 
         <?php if (!empty($info['phone'])) : ?>

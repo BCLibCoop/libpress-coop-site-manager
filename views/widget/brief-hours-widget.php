@@ -31,7 +31,7 @@ $full_names = filter_var(
                         <?php _e(ucfirst($day['full']), 'pll_string'); ?>
                     </span>
                 <?php else : ?>
-                    <abbr class="hours-dow" title="<?= $day['full'] ?>">
+                    <abbr class="hours-dow" title="<?= esc_attr($day['full']) ?>">
                         <?php _e(ucfirst($day['short']), 'pll_string'); ?>
                     </abbr>
                 <?php endif; ?>

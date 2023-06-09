@@ -86,9 +86,9 @@ class NetworkSitkaLibraries
                                 '</td></tr>',
                             $blog->blog_id,
                             $blog->domain,
-                            $lib_shortcode,
-                            $lib_locg,
-                            $lib_cat_link
+                            esc_attr($lib_shortcode),
+                            esc_attr($lib_locg),
+                            esc_attr($lib_cat_link)
                         );
 
                         // Switch back to previous blog (main network blog)
@@ -137,9 +137,9 @@ class NetworkSitkaLibraries
             switch_to_blog($blog->blog_id);
 
             // Collect and sanitize values for this site
-            $shortname = strtoupper(sanitize_text_field($_POST['shortcode_' . $blog->blog_id]));
-            $locg = (int) sanitize_text_field($_POST['locg_' . $blog->blog_id]);
-            $cat_link = sanitize_text_field($_POST['cat_link_' . $blog->blog_id]);
+            $shortname = strtoupper(sanitize_text_field(stripslashes($_POST['shortcode_' . $blog->blog_id])));
+            $locg = (int) sanitize_text_field(stripslashes($_POST['locg_' . $blog->blog_id]));
+            $cat_link = sanitize_text_field(stripslashes($_POST['cat_link_' . $blog->blog_id]));
 
             // Note: The previous carousel plugin appears to have put NA in as a placeholder for unset shortcodes so
             //       we test for it here

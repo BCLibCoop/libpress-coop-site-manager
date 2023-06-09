@@ -4,8 +4,8 @@ use BCLibCoop\SiteManager\CoopHours;
 
 extract($args);
 
-$days = CoopHours::getDaysData();
-$notes = get_option('coop-hours-notes');
+$days = wp_unslash(CoopHours::getDaysData());
+$notes = stripslashes(get_option('coop-hours-notes'));
 ?>
 
 <?= $before_widget ?>
@@ -20,7 +20,7 @@ $notes = get_option('coop-hours-notes');
     <ul class="operating-hours">
 
         <?php foreach ($days as $key => $value) : ?>
-            <li class="hours-day <?= $key ?>">
+            <li class="hours-day <?= esc_attr($key) ?>">
                 <span class="hours-dow"><?php _e(ucfirst($key), 'pll_string'); ?></span>
 
                 <?php if ($value['notopen']) : ?>
@@ -34,7 +34,7 @@ $notes = get_option('coop-hours-notes');
                                 <span class="period-separator">&amp;</span>
                             <?php endif; ?>
 
-                            <span class="period-<?= $period ?>">
+                            <span class="period-<?= esc_attr($period) ?>">
                                 <span class="hours-open"><?= $value['open' . $period_array] ?></span>
 
                                 <?php if (!empty($value['close' . $period_array])) : ?>

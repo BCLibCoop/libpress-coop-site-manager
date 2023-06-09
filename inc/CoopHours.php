@@ -92,7 +92,8 @@ class CoopHours extends AbstractSiteManagerPage
             ];
         }
 
-        $notes = sanitize_textarea_field($_POST['notes']);
+        $days = wp_unslash($days);
+        $notes = sanitize_textarea_field(stripslashes($_POST['notes']));
 
         $show_all = filter_var(
             $_POST['coop-hours-show-all'] ?? false,
@@ -121,7 +122,7 @@ class CoopHours extends AbstractSiteManagerPage
      */
     public static function getDaysData()
     {
-        $raw_days = array_filter(get_option('coop-hours-days', []));
+        $raw_days = array_filter(wp_unslash(get_option('coop-hours-days', [])));
         $days = [];
 
         if (!empty($raw_days)) {

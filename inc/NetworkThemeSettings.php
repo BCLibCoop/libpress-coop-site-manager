@@ -128,7 +128,7 @@ class NetworkThemeSettings
                                 ) {
                                     $setting_val = sprintf(
                                         '<a href="%s">%s</a>',
-                                        $edit_link,
+                                        esc_attr($edit_link),
                                         $setting_val
                                     );
                                 }
