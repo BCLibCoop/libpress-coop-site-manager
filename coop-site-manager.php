@@ -18,7 +18,7 @@
  * @wordpress-plugin
  * Plugin Name:       Coop Site Manager
  * Description:       LibPress-specific Site Manager functionality
- * Version:           3.3.1
+ * Version:           3.3.2
  * Network:           true
  * Requires at least: 5.9
  * Requires PHP:      7.4
@@ -48,8 +48,8 @@ if (file_exists($composer = __DIR__ . '/vendor/autoload.php')) {
 add_action('plugins_loaded', function () {
     $classes = [
         CoopSiteManager::class,
-        CoopFooter:: class,
         ContactInfo:: class,
+        CoopFooter:: class,
         CoopHours::class,
         CoopLocationMap::class,
         CoopMediaLink::class,
