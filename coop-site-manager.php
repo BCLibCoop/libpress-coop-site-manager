@@ -58,8 +58,12 @@ add_action('plugins_loaded', function () {
         LibPressSchema::class,
         NetworkSitkaLibraries::class,
         NetworkThemeSettings::class,
-        EventCalendarBeforeAfter::class,
     ];
+
+    // Conditionally load TEC Class
+    if (class_exists('Tribe__Events__Main')) {
+        $classes[] = EventCalendarBeforeAfter::class;
+    }
 
     foreach ($classes as $class) {
         new $class();
