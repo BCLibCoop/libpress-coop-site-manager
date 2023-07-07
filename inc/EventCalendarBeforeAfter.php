@@ -49,7 +49,7 @@ class EventCalendarBeforeAfter extends AbstractSiteManagerPage
     {
         add_action('acf/init', [$this, 'registerOptionsPage']);
         add_action('acf/include_fields', [$this, 'registerAcfFields']);
-        add_filter('acf/fields/flexible_content/layout_title/name=' . static::$option_name, [$this, 'acfFlexTitle'], 10, 4);
+        add_filter('acf/fields/flexible_content/layout_title/name=' . static::$option_name, [$this, 'acfFlexTitle']);
 
         add_action('admin_enqueue_scripts', [$this, 'adminEnqueueStylesScripts']);
 
@@ -157,7 +157,8 @@ class EventCalendarBeforeAfter extends AbstractSiteManagerPage
                 ])
                 ->addWysiwyg("after{$suffix}", [
                     'label' => '',
-                    'instructions' => 'The content is displayed at the bottom of the selected pages, after all other calendar content but before the footer menu',
+                    'instructions' => 'The content is displayed at the bottom of the selected pages, after all other '
+                        . 'calendar content but before the footer menu',
                     'toolbar' => 'basic',
                     'delay' => 1,
                 ])
@@ -168,7 +169,8 @@ class EventCalendarBeforeAfter extends AbstractSiteManagerPage
         $flexible
             ->addFlexibleContent(static::$option_name, [
                 'label' => 'Calendar Page Content',
-                'instructions' => 'Create one or more groups of content to display before/after automatically generated calendar pages',
+                'instructions' => 'Create one or more groups of content to display before/after automatically '
+                    . 'generated calendar pages',
             ])
                 ->addLayout($content_fields, [
                     'layout' => 'block',
@@ -189,7 +191,10 @@ class EventCalendarBeforeAfter extends AbstractSiteManagerPage
     {
     }
 
-    public function acfFlexTitle($title, $field, $layout, $i)
+    /**
+     * Include layout description in header
+     */
+    public function acfFlexTitle($title)
     {
         if ($description = get_sub_field('description')) {
             $title .= ' - <b>' . esc_html($description) . '</b>';
@@ -207,12 +212,10 @@ class EventCalendarBeforeAfter extends AbstractSiteManagerPage
     {
         $tests = [];
 
-        // Which is the operator?
         $conditional_operator = $conditionals['operator'] ?? 'OR';
 
-        // If we have a set of conditionals we loop on then and get if they are true.
         foreach ($conditionals as $key => $conditional) {
-            // Avoid doing anything to the operator
+            // Skip the operator key
             if ($key === 'operator') {
                 continue;
             }
@@ -220,7 +223,6 @@ class EventCalendarBeforeAfter extends AbstractSiteManagerPage
             $tests[] = (bool) call_user_func($conditional, $arg);
         }
 
-        // By default we use OR for backwards compatibility.
         if ($conditional_operator === 'OR') {
             return in_array(true, $tests);
         }
