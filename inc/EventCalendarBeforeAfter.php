@@ -164,19 +164,6 @@ class EventCalendarBeforeAfter extends AbstractSiteManagerPage
             ;
         }
 
-        $repeater = new FieldsBuilder(static::$option_name . '_repeater');
-        $repeater
-            ->addRepeater(static::$option_name, [
-                'label' => 'Calendar Page Content',
-                'instructions' => 'Create one or more groups of content to display before/after automatically generated calendar pages',
-                'button_label' => 'Add Content',
-                'layout' => 'block',
-                'collapsed' => 'description',
-                'min' => 1,
-            ])
-                ->addFields($content_fields)
-        ;
-
         $flexible = new FieldsBuilder(static::$option_name . '_flexible');
         $flexible
             ->addFlexibleContent(static::$option_name, [
@@ -189,7 +176,6 @@ class EventCalendarBeforeAfter extends AbstractSiteManagerPage
         ;
 
         $options_page
-            // ->addFields($repeater)
             ->addFields($flexible)
         ;
 
