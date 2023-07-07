@@ -49,6 +49,7 @@ class EventCalendarBeforeAfter extends AbstractSiteManagerPage
     {
         add_action('acf/init', [$this, 'registerOptionsPage']);
         add_action('acf/include_fields', [$this, 'registerAcfFields']);
+        add_filter('acf/fields/flexible_content/layout_title/name=' . static::$option_name, [$this, 'acfFlexTitle'], 10, 4);
 
         add_action('admin_enqueue_scripts', [$this, 'adminEnqueueStylesScripts']);
 
@@ -87,57 +88,53 @@ class EventCalendarBeforeAfter extends AbstractSiteManagerPage
      */
     public function registerAcfFields()
     {
-        $tec_content = new FieldsBuilder(static::$slug, [
+        $options_page = new FieldsBuilder('options', [
             'title' => static::$page_title,
             'style' => 'seamless',
         ]);
 
-        $tec_content->setLocation('options_page', '==', static::$slug);
+        $options_page->setLocation('options_page', '==', static::$slug);
 
-        $tec_content_repeater = $tec_content
-            ->addRepeater(static::$option_name, [
-                'label' => 'Calendar Page Content',
-                'instructions' => 'Create one or more	groups of content to display before/after automatically generated calendar pages',
-                'button_label' => 'Add Content',
-                'layout' => 'block',
-                'collapsed' => 'description',
-                'min' => 1,
+        $content_fields = new FieldsBuilder('content', [
+            'label' => 'Calendar Page Content',
+        ]);
+
+        $content_fields
+            ->addText('description', [
+                'label' => 'Content Description',
+                'instructions' => 'Only used to organize your content on this page, not shown to users',
+                'required' => 1,
+                'wrapper' => ['width' => 50],
             ])
-                ->addText('description', [
-                    'label' => 'Content Description',
-                    'instructions' => 'Only used to organize your content on this page, not shown to users',
+            ->addRepeater('locations', [
+                'label' => 'Display Locations',
+                'instructions' => 'Select the calendar page types where this content should appear',
+                'required' => 1,
+                'layout' => 'table',
+                'min' => 1,
+                'button_label' => 'Add Display Location',
+                'wrapper' => ['width' => 50],
+            ])
+                ->addSelect('location', [
                     'required' => 1,
-                    'wrapper' => ['width' => 50],
+                    'choices' => array_combine(
+                        array_keys($this->locations),
+                        array_column($this->locations, 'label')
+                    )
                 ])
-                ->addRepeater('locations', [
-                    'label' => 'Display Locations',
-                    'instructions' => 'Select the calendar page types where this content should appear',
+                ->addTaxonomy('categories', [
+                    'taxonomy' => Tribe__Events__Main::TAXONOMY,
                     'required' => 1,
-                    'layout' => 'table',
-                    'min' => 1,
-                    'button_label' => 'Add Display Location',
-                    'wrapper' => ['width' => 50],
+                    'add_term' => 0,
+                    'save_terms' => 0,
+                    'load_terms' => 0,
+                    'return_format' => 'value',
+                    'field_type' => 'multi_select',
+                    'allow_null' => 0,
+                    'multiple' => 0,
                 ])
-                    ->addSelect('location', [
-                        'required' => 1,
-                        'choices' => array_combine(
-                            array_keys($this->locations),
-                            array_column($this->locations, 'label')
-                        )
-                    ])
-                    ->addTaxonomy('categories', [
-                        'taxonomy' => Tribe__Events__Main::TAXONOMY,
-                        'required' => 1,
-                        'add_term' => 0,
-                        'save_terms' => 0,
-                        'load_terms' => 0,
-                        'return_format' => 'value',
-                        'field_type' => 'multi_select',
-                        'allow_null' => 0,
-                        'multiple' => 0,
-                    ])
-                        ->conditional('location', '==', 'category')
-                    ->endRepeater();
+                    ->conditional('location', '==', 'category')
+            ->endRepeater();
         ;
 
         // Tag/WYSIWYG for each language
@@ -145,7 +142,7 @@ class EventCalendarBeforeAfter extends AbstractSiteManagerPage
             $suffix = empty($curlang->locale) ? '' : '_' . strtolower($curlang->locale);
             $label_suffix = empty($curlang->name) ? '' : ' (' . $curlang->name . ')';
 
-            $tec_content_repeater
+            $content_fields
                 ->addTab("before{$suffix}", [
                     'label' => "Before{$label_suffix}",
                 ])
@@ -167,7 +164,36 @@ class EventCalendarBeforeAfter extends AbstractSiteManagerPage
             ;
         }
 
-        acf_add_local_field_group($tec_content->build());
+        $repeater = new FieldsBuilder(static::$option_name . '_repeater');
+        $repeater
+            ->addRepeater(static::$option_name, [
+                'label' => 'Calendar Page Content',
+                'instructions' => 'Create one or more groups of content to display before/after automatically generated calendar pages',
+                'button_label' => 'Add Content',
+                'layout' => 'block',
+                'collapsed' => 'description',
+                'min' => 1,
+            ])
+                ->addFields($content_fields)
+        ;
+
+        $flexible = new FieldsBuilder(static::$option_name . '_flexible');
+        $flexible
+            ->addFlexibleContent(static::$option_name, [
+                'label' => 'Calendar Page Content',
+                'instructions' => 'Create one or more groups of content to display before/after automatically generated calendar pages',
+            ])
+                ->addLayout($content_fields, [
+                    'layout' => 'block',
+                ])
+        ;
+
+        $options_page
+            // ->addFields($repeater)
+            ->addFields($flexible)
+        ;
+
+        acf_add_local_field_group($options_page->build());
     }
 
     /**
@@ -175,6 +201,15 @@ class EventCalendarBeforeAfter extends AbstractSiteManagerPage
      */
     public function saveChangeCallback()
     {
+    }
+
+    public function acfFlexTitle($title, $field, $layout, $i)
+    {
+        if ($description = get_sub_field('description')) {
+            $title .= ' - <b>' . esc_html($description) . '</b>';
+        }
+
+        return $title;
     }
 
     /**
