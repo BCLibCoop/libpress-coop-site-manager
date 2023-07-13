@@ -37,7 +37,7 @@ class CoopLocationMap extends AbstractSiteManagerPage
         } else {
             $full_address = '';
         }
-        $address_encoded = urlencode($full_address);
+        $address_encoded = rawurlencode($full_address);
 
         $gmaps_url = add_query_arg(
             [

@@ -87,10 +87,6 @@ class LibPressSchema
                         $schema['address']['postalCode'] = $info['pcode'];
                     }
 
-                    if (!empty($info['pcode'])) {
-                        $schema['address']['postalCode'] = $info['pcode'];
-                    }
-
                     if (!empty($info['address'])) {
                         $schema['address']['streetAddress'] = $info['address'];
 

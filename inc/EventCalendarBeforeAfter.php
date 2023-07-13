@@ -4,7 +4,6 @@ namespace BCLibCoop\SiteManager;
 
 use StoutLogic\AcfBuilder\FieldsBuilder;
 use Tribe__Events__Main;
-use Tribe__Utils__Array;
 
 class EventCalendarBeforeAfter extends AbstractSiteManagerPage
 {
@@ -61,7 +60,9 @@ class EventCalendarBeforeAfter extends AbstractSiteManagerPage
         add_filter('tribe_get_option', [$this, 'insertContent'], 100, 2);
 
         // Populate content array
-        $this->content = get_field(static::$option_name, 'options');
+        if (function_exists('get_field')) {
+            $this->content = get_field(static::$option_name, 'options');
+        }
     }
 
     /**
