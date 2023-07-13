@@ -3,6 +3,17 @@
 extract($args);
 
 $info = wp_unslash(get_option('coop-ci-info', []));
+
+$maps_url = 'https://www.google.com/maps/dir/'; // ?api=1
+$map_desination = "{$info['address']}, {$info['city']}, {$info['prov']} {$info['pcode']}";
+$map_desination = rawurlencode($map_desination);
+$maps_url = add_query_arg(
+    [
+        'api' => 1,
+        'destination' => $map_desination,
+    ],
+    $maps_url
+);
 ?>
 
 <?= $before_widget; ?>
@@ -18,22 +29,25 @@ $info = wp_unslash(get_option('coop-ci-info', []));
 
         <?php if (!empty($info['phone'])) : ?>
             <strong><?php _e('Phone', 'pll_string') ?></strong>
-            <?= $info['phone'] ?><br />
+            <a href="tel:<?= preg_replace('/[^0-9]/', '', $info['phone']) ?>"><?= $info['phone'] ?></a><br />
         <?php endif; ?>
 
         <?php if (!empty($info['fax'])) : ?>
             <strong><?php _e('Fax', 'pll_string') ?></strong>
-            <?= $info['fax'] ?><br />
+            <a href="tel:<?= preg_replace('/[^0-9]/', '', $info['fax']) ?>"><?= $info['fax'] ?></a><br />
         <?php endif; ?>
 
         <?php if (!empty($info['address'])) : ?>
-            <?= $info['address'] ?><br />
+            <a href="<?= $maps_url ?>" target="_blank" rel="noreferrer">
+                <?= $info['address'] ?><br />
 
-            <?php if (!empty($info['address2'])) : ?>
-                <?= $info['address2'] ?><br />
-            <?php endif; ?>
+                <?php if (!empty($info['address2'])) : ?>
+                    <?= $info['address2'] ?><br />
+                <?php endif; ?>
 
-            <?= $info['city'] . ' ' . $info['prov'] . ' ' . $info['pcode'] ?><br />
+                <?= $info['city'] . ' ' . $info['prov'] . ' ' . $info['pcode'] ?>
+            </a>
+            <br />
         <?php endif; ?>
 
     </div><!-- .coop-contact-info -->
