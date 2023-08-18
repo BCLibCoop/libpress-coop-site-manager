@@ -52,12 +52,27 @@ class InfoBanner extends AbstractSiteManagerPage
 
     /**
      * Should the info banner be shown?
-     *
-     * @todo: Check start/end date
      */
     public static function shouldShowBanner()
     {
-        return get_field(static::$slug . '_enabled', 'options');
+        $start = get_field(static::$slug . '_start', 'options', false);
+        $end = get_field(static::$slug . '_expires', 'options', false);
+
+        $start_datetime = date_create_from_format('Y-m-d H:i:s', $start, wp_timezone());
+        $end_datetime = date_create_from_format('Y-m-d H:i:s', $end, wp_timezone());
+        $now_datetime = date_create('now', wp_timezone());
+
+        return (
+            get_field(static::$slug . '_enabled', 'options')
+            && (
+                (!$start_datetime && !$end_datetime)
+                || ($start_datetime && $end_datetime
+                    && $now_datetime >= $start_datetime && $now_datetime <= $end_datetime
+                )
+                || ($start_datetime && !$end_datetime && $now_datetime >= $start_datetime)
+                || (!$start_datetime && $end_datetime && $now_datetime <= $end_datetime)
+            )
+        );
     }
 
     /**
@@ -110,24 +125,30 @@ class InfoBanner extends AbstractSiteManagerPage
                 'instructions' => 'Enable or disable the global information banner that '
                     . 'shows below the hours on all pages',
                 'ui' => true,
+                'ui_on_text' => 'Enable',
+                'ui_off_text' => 'Disable',
+            ])
+            ->addMessage(
+                'Time-Limited Banner',
+                'Use the date pickers below to have the banner enabled only during a specific timeframe. '
+                . '<br>The banner must still be set to <strong>Enable</strong> above.'
+            )
+            ->addDateTimePicker('start', [
+                'name' => static::$slug . '_start',
+                'label' => 'Start Date/Time',
+                'instructions' => 'Earliest date at which the notice will show',
+                'wrapper' => [
+                    'width' => 50,
+                ],
+            ])
+            ->addDateTimePicker('expires', [
+                'name' => static::$slug . '_expires',
+                'label' => 'End Date/Time',
+                'instructions' => 'Date after which the notice will no longer be displayed',
+                'wrapper' => [
+                    'width' => 50,
+                ],
             ]);
-            // TODO: Start/End Date
-            // ->addDateTimePicker('start', [
-            //     'name' => static::$slug . '_start',
-            //     'label' => 'Start Date/Time',
-            //     'instructions' => 'Date at which the notice will be automatically enabled',
-            //     'wrapper' => [
-            //         'width' => 50,
-            //     ],
-            // ])
-            // ->addDateTimePicker('expires', [
-            //     'name' => static::$slug . '_expires',
-            //     'label' => 'End Date/Time',
-            //     'instructions' => 'Date at which the notice will be automatically disabled',
-            //     'wrapper' => [
-            //         'width' => 50,
-            //     ],
-            // ]);
 
         foreach ($this->languages as $curlang) {
             $name = 'html' . (empty($curlang->locale) ? '' : '_' . strtolower($curlang->locale));
