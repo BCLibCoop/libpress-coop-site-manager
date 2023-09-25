@@ -28,7 +28,10 @@ $maps_url = add_query_arg(
         <?php endif; ?>
 
         <?php if (!empty($info['phone'])) : ?>
-            <strong><?php _e('Phone', 'pll_string') ?></strong>
+            <?php // Only show the phone label if we also have a fax number ?>
+            <?php if (!empty($info['fax'])) : ?>
+                <strong><?php _e('Phone', 'pll_string') ?></strong>
+            <?php endif; ?>
             <a href="tel:<?= preg_replace('/[^0-9]/', '', $info['phone']) ?>"><?= $info['phone'] ?></a><br />
         <?php endif; ?>
 
