@@ -58,8 +58,8 @@ class InfoBanner extends AbstractSiteManagerPage
         $start = get_field(static::$slug . '_start', 'options', false);
         $end = get_field(static::$slug . '_expires', 'options', false);
 
-        $start_datetime = date_create_from_format('Y-m-d H:i:s', $start, wp_timezone());
-        $end_datetime = date_create_from_format('Y-m-d H:i:s', $end, wp_timezone());
+        $start_datetime = $start ? date_create_from_format('Y-m-d H:i:s', $start, wp_timezone()) : null;
+        $end_datetime = $end ? date_create_from_format('Y-m-d H:i:s', $end, wp_timezone()) : null;
         $now_datetime = date_create('now', wp_timezone());
 
         return (
