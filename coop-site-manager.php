@@ -18,7 +18,7 @@
  * @wordpress-plugin
  * Plugin Name:       Coop Site Manager
  * Description:       LibPress-specific Site Manager functionality
- * Version:           3.6.2
+ * Version:           3.7.0
  * Network:           true
  * Requires at least: 5.9
  * Requires PHP:      7.4
