@@ -5,22 +5,56 @@ namespace BCLibCoop\SiteManager;
 class NetworkThemeSettings
 {
     private static $settings = [
-        'search' => [
+        'Custom CSS' => [],
+        'Layout Information' => [],
+        'Style Settings' => [
+            'header_text' => 'Title and Tagline',
+            'logo_alignment' => 'Logo Alignment',
+            'logo_size' => [
+                'label' => 'Logo Size',
+                'return' => 'intval',
+                'suffix' => '%',
+            ],
+            'custom_logo' => 'Logo Image',
+            'header_image' => 'Header Image',
+            'background_image' => 'Background Image',
+            'show_sidebar' => 'Show Sidebar',
+        ],
+        'Calendar Settings' => [
+            'tec_single_before_html' => 'Hide Single-Event Before HTML (Legacy)',
+            'tec_single_after_html' => 'Hide Single-Event After HTML (Legacy)',
+            'libpress_tec_default_cats' => [
+                'label' => 'Default Calendar Categories',
+                'type' => 'option',
+            ],
+            'libpress_tec_default_cats_comm' => [
+                'label' => 'Community Submitted Categories',
+                'type' => 'option',
+            ],
+            'libpress_tec_main_exclude' => [
+                'label' => 'Excluded Categories',
+                'type' => 'option',
+            ],
+            'libpress_tec_community_header' => [
+                'label' => 'Community Submission Page Header (Legacy)',
+                'type' => 'option',
+                'return' => 'strlen',
+                'suffix' => ' Characters',
+            ],
+            'options_libpress_tec_content' => [
+                'label' => 'Before/After',
+                'type' => 'option',
+                'return' => 'count',
+                'suffix' => ' Content Block(s) Defined',
+            ]
+        ],
+        'Search Settings' => [
             'search_style' => 'Search Box Style',
             'search_type' => 'Search Type',
             'search_url' => 'Search URL',
             'search_param' => 'Search Term Parameter',
             'search_extra_params' => 'Extra Search Parameters',
             'search_external' => 'External Search Site',
-        ],
-        'style' => [
-            'header_text' => 'Title and Tagline',
-            'logo_alignment' => 'Logo Alignment',
-            'logo_size' => 'Logo Size',
-            'custom_logo' => 'Logo Image',
-            'header_image' => 'Header Image',
-            'background_image' => 'Background Image',
-            'show_sidebar' => 'Show Sidebar',
         ],
     ];
 
@@ -56,12 +90,22 @@ class NetworkThemeSettings
             wp_die('Sorry, you do not have permission to access this page');
         }
 
-        // Get all active public blogs
+        // Get all active blogs
         $blogs = get_sites([
-            'public' => 1,
             'archived' => 0,
             'deleted' => 0,
         ]); ?>
+
+        <style>
+            .value-false,
+            .value-0 {
+                color: red;
+            }
+
+            .value-true {
+                color: green;
+            }
+        </style>
 
         <div class="wrap">
             <h1 class="wp-heading-inline">LibPress Theme Settings</h1>
@@ -72,9 +116,9 @@ class NetworkThemeSettings
                     <tr>
                         <th class="column-posts">WP Site ID</th>
                         <th>Domain Name</th>
-                        <th>Custom CSS</th>
-                        <th>Search Settings</th>
-                        <th>Style Settings</th>
+                        <?php foreach (array_keys(self::$settings) as $section_header) : ?>
+                            <th><?= $section_header ?></th>
+                        <?php endforeach; ?>
                     </tr>
                 </thead>
 
@@ -83,60 +127,126 @@ class NetworkThemeSettings
                 foreach ($blogs as $blog) :
                     switch_to_blog($blog->blog_id);
 
+                    $settings_html = array_fill_keys(array_keys(self::$settings), '');
+
                     // Custom CSS
                     $css = wp_get_custom_css();
 
-                    $settings_html = [
-                        'css' => sprintf(
-                            '<textarea rows="5" style="width: 100%%;" %s>%s</textarea><span>%d lines</span>',
-                            empty($css) ? 'readonly disabled' : 'readonly',
-                            $css,
-                            substr_count($css, PHP_EOL)
-                        ),
-                    ];
+                    $settings_html['Custom CSS'] .= sprintf(
+                        '<textarea rows="5" style="width: 100%%;" %s>%s</textarea><span>%d lines</span>',
+                        empty($css) ? 'readonly disabled' : 'readonly',
+                        esc_textarea($css),
+                        substr_count($css, PHP_EOL)
+                    );
 
-                    foreach (self::$settings as $settings_section_name => $settings_section) {
-                        if (empty($settings_html[$settings_section_name])) {
-                            $settings_html[$settings_section_name] = '';
+                    // Frontpage Content
+                    $front_page = (int) get_option('page_on_front');
+
+                    if (!empty($front_page) && $front_post = get_post($front_page)) {
+                        if (
+                            get_post_modified_time('U', false, $front_post) > 1646000000
+                            && !empty(trim(get_the_content(null, false, $front_post)))
+                        ) {
+                            $settings_html['Layout Information'] .= sprintf(
+                                '<div><strong>%s:</strong> %s</div>',
+                                'Frontpage Content',
+                                'true'
+                            );
                         }
+                    }
 
-                        foreach ($settings_section as $setting => $setting_label) {
-                            $setting_val = get_theme_mod($setting, null);
+                    // Widget Areas
+                    if ($sidebars = wp_get_sidebars_widgets()) {
+                        foreach ($sidebars as $sidebar_name => $widgets) {
+                            if (
+                                $sidebar_name === 'wp_inactive_widgets'
+                                || substr($sidebar_name, 0, 16) === 'orphaned_widgets'
+                                // || count($widgets) < 1
+                            ) {
+                                continue;
+                            }
+
+                            $sidebar_name = wp_get_sidebar($sidebar_name)['name'];
+
+                            $settings_html['Layout Information'] .= sprintf(
+                                '<div><strong>%s:</strong> <span class="%s">%s</span></div>',
+                                "{$sidebar_name} Widgets",
+                                'value-' . count($widgets),
+                                count($widgets)
+                            );
+                        }
+                    }
+
+                    // Theme Mods/Options
+                    foreach (self::$settings as $settings_section_name => $settings_section) {
+                        foreach ($settings_section as $setting => $setting_option) {
+                            $label = $setting_option['label'] ?? $setting_option ?? 'Unknown';
+                            $type = $setting_option['type'] ?? 'theme_mod';
+                            $return = $setting_option['return'] ?? null;
+                            $suffix = $setting_option['suffix'] ?? '';
+
+                            $setting_val = null;
+                            $setting_val_safe = '';
+                            $value_class = '';
+
+                            if ($type === 'option') {
+                                $setting_val = get_option($setting, null);
+                            } else {
+                                $setting_val = get_theme_mod($setting, null);
+                            }
 
                             if ($setting_val !== null) {
-                                // Show boolean-like as true/false
-                                if (
-                                    filter_var(
-                                        $setting_val,
-                                        FILTER_VALIDATE_BOOLEAN,
-                                        FILTER_NULL_ON_FAILURE
-                                    ) !== null
-                                ) {
-                                    $setting_val = var_export((bool) $setting_val, true);
-                                }
+                                if (is_callable($return)) {
+                                    $setting_val = call_user_func($return, $setting_val);
+                                } else {
+                                    // Implode any array values
+                                    $setting_val = implode(', ', (array) $setting_val);
 
-                                if ($attachment_id = attachment_url_to_postid($setting_val)) {
-                                    $setting_val = $attachment_id;
-                                }
+                                    // Show boolean-like as true/false
+                                    if (
+                                        filter_var(
+                                            $setting_val,
+                                            FILTER_VALIDATE_BOOLEAN,
+                                            FILTER_NULL_ON_FAILURE
+                                        ) !== null
+                                    ) {
+                                        $setting_val = var_export((bool) $setting_val, true);
+                                        $value_class = "value-{$setting_val}";
+                                    }
 
-                                // Trim URLs down a bit
-                                $setting_val = str_replace(home_url(), '', $setting_val);
+                                    // Process URLs
+                                    if (strpos($setting_val, 'http') === 0) {
+                                        if ($attachment_id = attachment_url_to_postid($setting_val)) {
+                                            $setting_val = $attachment_id;
+                                        }
 
-                                if (
-                                    is_numeric($setting_val)
-                                    && $edit_link = get_edit_post_link((int) $setting_val, 'raw')
-                                ) {
-                                    $setting_val = sprintf(
-                                        '<a href="%s">%s</a>',
-                                        esc_attr($edit_link),
-                                        $setting_val
-                                    );
+                                        // Trim down any remaining URLs a bit
+                                        $setting_val = str_replace(home_url(), '', $setting_val);
+                                    }
+
+                                    // Provide Edit links if possible (could provide false-positives)
+                                    if (
+                                        is_numeric($setting_val)
+                                        && $edit_link = get_edit_post_link((int) $setting_val, 'raw')
+                                    ) {
+                                        // We're making sure this is sanitized HTML
+                                        $setting_val_safe = sprintf(
+                                            '<a href="%s">%s</a>',
+                                            esc_attr($edit_link),
+                                            esc_html($setting_val)
+                                        );
+                                        // Unset the normal value so it is not output
+                                        $setting_val = '';
+                                    }
                                 }
 
                                 $settings_html[$settings_section_name] .= sprintf(
-                                    '<div><strong>%s:</strong> %s</div>',
-                                    $setting_label,
-                                    $setting_val
+                                    '<div><strong>%s:</strong> <span class="%s">%s%s%s</span></div>',
+                                    esc_html($label),
+                                    esc_attr($value_class),
+                                    esc_html($setting_val),
+                                    $setting_val_safe,
+                                    esc_html($suffix)
                                 );
                             }
                         }
@@ -156,23 +266,20 @@ class NetworkThemeSettings
                     $row_actions .= join(' | </span><span>', $actions);
                     $row_actions .= '</span></div>';
 
-                    // Output form
-                    echo sprintf(
+                    // Output row
+                    $row = [
                         '<tr>' .
                             '<td class="column-posts">%d</td>' .
                             '<td class="has-row-actions"><strong><a href="%s">%s</a></strong>%s</td>' .
-                            '<td>%s</td>' .
-                            '<td>%s</td>' .
-                            '<td>%s</td>' .
+                            str_repeat('<td>%s</td>', count($settings_html)) .
                         '</tr>',
                         $blog->blog_id,
                         esc_url(home_url('/')),
-                        $blog->domain,
+                        esc_html($blog->domain),
                         $row_actions,
-                        $settings_html['css'],
-                        $settings_html['search'],
-                        $settings_html['style'],
-                    );
+                    ];
+
+                    echo call_user_func_array('sprintf', array_merge($row, $settings_html));
 
                     // Switch back to previous blog (main network blog)
                     restore_current_blog();
