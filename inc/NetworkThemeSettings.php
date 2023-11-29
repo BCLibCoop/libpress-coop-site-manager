@@ -42,10 +42,10 @@ class NetworkThemeSettings
                 'suffix' => ' Characters',
             ],
             'options_libpress_tec_content' => [
-                'label' => 'Before/After',
+                'label' => 'Before/After Content',
                 'type' => 'option',
                 'return' => 'count',
-                'suffix' => ' Content Block(s) Defined',
+                'suffix' => ' Block(s) Defined',
             ]
         ],
         'Search Settings' => [
@@ -55,6 +55,11 @@ class NetworkThemeSettings
             'search_param' => 'Search Term Parameter',
             'search_extra_params' => 'Extra Search Parameters',
             'search_external' => 'External Search Site',
+            'search_external_label' => 'External Search Label',
+            'eg_multibranch' => [
+                'label' => 'EG Branches',
+                'return' => 'count',
+            ],
         ],
     ];
 
@@ -195,49 +200,54 @@ class NetworkThemeSettings
                                 $setting_val = get_theme_mod($setting, null);
                             }
 
+                            // Run the 'return' function if we have one, and the
+                            // value isn't null
+                            if ($setting_val !== null && is_callable($return)) {
+                                $setting_val = call_user_func($return, $setting_val) ?: null;
+                            }
+
                             if ($setting_val !== null) {
-                                if (is_callable($return)) {
-                                    $setting_val = call_user_func($return, $setting_val);
-                                } else {
-                                    // Implode any array values
-                                    $setting_val = implode(', ', (array) $setting_val);
+                                // Implode any array values
+                                $setting_val = implode(', ', (array) $setting_val);
 
-                                    // Show boolean-like as true/false
-                                    if (
-                                        filter_var(
-                                            $setting_val,
-                                            FILTER_VALIDATE_BOOLEAN,
-                                            FILTER_NULL_ON_FAILURE
-                                        ) !== null
-                                    ) {
-                                        $setting_val = var_export((bool) $setting_val, true);
-                                        $value_class = "value-{$setting_val}";
+                                // Show boolean-like as true/false, unless the result is from
+                                // a return function that should be numeric
+                                if (
+                                    ! in_array($return, ['strlen', 'count', 'intval'])
+                                    && filter_var(
+                                        $setting_val,
+                                        FILTER_VALIDATE_BOOLEAN,
+                                        FILTER_NULL_ON_FAILURE
+                                    ) !== null
+                                ) {
+                                    $setting_val = var_export((bool) $setting_val, true);
+                                    $value_class = "value-{$setting_val}";
+                                }
+
+                                // Process URLs
+                                if (strpos($setting_val, 'http') === 0) {
+                                    if ($attachment_id = attachment_url_to_postid($setting_val)) {
+                                        $setting_val = $attachment_id;
                                     }
 
-                                    // Process URLs
-                                    if (strpos($setting_val, 'http') === 0) {
-                                        if ($attachment_id = attachment_url_to_postid($setting_val)) {
-                                            $setting_val = $attachment_id;
-                                        }
+                                    // Trim down any remaining URLs a bit
+                                    $setting_val = str_replace(home_url(), '', $setting_val);
+                                }
 
-                                        // Trim down any remaining URLs a bit
-                                        $setting_val = str_replace(home_url(), '', $setting_val);
-                                    }
-
-                                    // Provide Edit links if possible (could provide false-positives)
-                                    if (
-                                        is_numeric($setting_val)
-                                        && $edit_link = get_edit_post_link((int) $setting_val, 'raw')
-                                    ) {
-                                        // We're making sure this is sanitized HTML
-                                        $setting_val_safe = sprintf(
-                                            '<a href="%s">%s</a>',
-                                            esc_attr($edit_link),
-                                            esc_html($setting_val)
-                                        );
-                                        // Unset the normal value so it is not output
-                                        $setting_val = '';
-                                    }
+                                // Provide Edit links if possible (could provide false-positives)
+                                if (
+                                    is_numeric($setting_val)
+                                    && get_post_type((int) $setting_val) === 'attachment'
+                                    && $edit_link = get_edit_post_link((int) $setting_val, 'raw')
+                                ) {
+                                    // We're making sure this is sanitized HTML
+                                    $setting_val_safe = sprintf(
+                                        '<a href="%s">%d</a>',
+                                        esc_attr($edit_link),
+                                        (int) $setting_val
+                                    );
+                                    // Unset the normal value so it is not output
+                                    $setting_val = '';
                                 }
 
                                 $settings_html[$settings_section_name] .= sprintf(
