@@ -6,9 +6,9 @@ class NetworkThemeSettings
 {
     private static $settings = [
         'Custom CSS' => [],
-        'Layout Information' => [],
         'Style Settings' => [
             'header_text' => 'Title and Tagline',
+            'header_text_alignment' => 'Header Text Justification',
             'logo_alignment' => 'Logo Alignment',
             'logo_size' => [
                 'label' => 'Logo Size',
@@ -19,6 +19,9 @@ class NetworkThemeSettings
             'header_image' => 'Header Image',
             'background_image' => 'Background Image',
             'show_sidebar' => 'Show Sidebar',
+            'footer_menu_order' => 'Footer Menu',
+            'topbar_location' => 'Top Bar Location',
+            'menu_justification' => 'Menu Justification',
         ],
         'Calendar Settings' => [
             'tec_single_before_html' => 'Hide Single-Event Before HTML (Legacy)',
@@ -60,6 +63,8 @@ class NetworkThemeSettings
                 'label' => 'EG Branches',
                 'return' => 'count',
             ],
+        ],
+        'Widget Configuration' => [
         ],
     ];
 
@@ -134,54 +139,6 @@ class NetworkThemeSettings
 
                     $settings_html = array_fill_keys(array_keys(self::$settings), '');
 
-                    // Custom CSS
-                    $css = wp_get_custom_css();
-
-                    $settings_html['Custom CSS'] .= sprintf(
-                        '<textarea rows="5" style="width: 100%%;" %s>%s</textarea><span>%d lines</span>',
-                        empty($css) ? 'readonly disabled' : 'readonly',
-                        esc_textarea($css),
-                        substr_count($css, PHP_EOL)
-                    );
-
-                    // Frontpage Content
-                    $front_page = (int) get_option('page_on_front');
-
-                    if (!empty($front_page) && $front_post = get_post($front_page)) {
-                        if (
-                            get_post_modified_time('U', false, $front_post) > 1646000000
-                            && !empty(trim(get_the_content(null, false, $front_post)))
-                        ) {
-                            $settings_html['Layout Information'] .= sprintf(
-                                '<div><strong>%s:</strong> %s</div>',
-                                'Frontpage Content',
-                                'true'
-                            );
-                        }
-                    }
-
-                    // Widget Areas
-                    if ($sidebars = wp_get_sidebars_widgets()) {
-                        foreach ($sidebars as $sidebar_name => $widgets) {
-                            if (
-                                $sidebar_name === 'wp_inactive_widgets'
-                                || substr($sidebar_name, 0, 16) === 'orphaned_widgets'
-                                // || count($widgets) < 1
-                            ) {
-                                continue;
-                            }
-
-                            $sidebar_name = wp_get_sidebar($sidebar_name)['name'];
-
-                            $settings_html['Layout Information'] .= sprintf(
-                                '<div><strong>%s:</strong> <span class="%s">%s</span></div>',
-                                "{$sidebar_name} Widgets",
-                                'value-' . count($widgets),
-                                count($widgets)
-                            );
-                        }
-                    }
-
                     // Theme Mods/Options
                     foreach (self::$settings as $settings_section_name => $settings_section) {
                         foreach ($settings_section as $setting => $setting_option) {
@@ -204,6 +161,15 @@ class NetworkThemeSettings
                             // value isn't null
                             if ($setting_val !== null && is_callable($return)) {
                                 $setting_val = call_user_func($return, $setting_val) ?: null;
+                            }
+
+                            // TODO - Factor this out more generically
+                            if ($setting === 'footer_menu_order') {
+                                $menus = get_nav_menu_locations();
+
+                                if (empty($menus['secondary'])) {
+                                    $setting_val = "{$setting_val} - No Menu Set";
+                                }
                             }
 
                             if ($setting_val !== null) {
@@ -259,6 +225,57 @@ class NetworkThemeSettings
                                     esc_html($suffix)
                                 );
                             }
+                        }
+                    }
+
+                    // Custom CSS
+                    $css = wp_get_custom_css();
+                    $css_post = wp_get_custom_css_post(get_stylesheet());
+
+                    $settings_html['Custom CSS'] .= sprintf(
+                        '<textarea rows="5" style="width: 100%%;" %s>%s</textarea>'
+                        . '<span>%d lines</span>&nbsp;<span>(Last updated %s)',
+                        empty($css) ? 'readonly disabled' : 'readonly',
+                        esc_textarea($css),
+                        substr_count($css, PHP_EOL),
+                        get_the_modified_date('Y-m-d', $css_post)
+                    );
+
+                    // Frontpage Content
+                    $front_page = (int) get_option('page_on_front');
+
+                    if (!empty($front_page) && $front_post = get_post($front_page)) {
+                        if (
+                            get_post_modified_time('U', false, $front_post) > 1646000000
+                            && !empty(trim(get_the_content(null, false, $front_post)))
+                        ) {
+                            $settings_html['Style Settings'] .= sprintf(
+                                '<div><strong>%s:</strong> %s</div>',
+                                'Frontpage Content',
+                                'true'
+                            );
+                        }
+                    }
+
+                    // Widget Areas
+                    if ($sidebars = wp_get_sidebars_widgets()) {
+                        foreach ($sidebars as $sidebar_name => $widgets) {
+                            if (
+                                $sidebar_name === 'wp_inactive_widgets'
+                                || substr($sidebar_name, 0, 16) === 'orphaned_widgets'
+                                // || count($widgets) < 1
+                            ) {
+                                continue;
+                            }
+
+                            $sidebar_name = wp_get_sidebar($sidebar_name)['name'];
+
+                            $settings_html['Widget Configuration'] .= sprintf(
+                                '<div><strong>%s:</strong> <span class="%s">%s</span></div>',
+                                "{$sidebar_name} Widgets",
+                                'value-' . count($widgets),
+                                count($widgets)
+                            );
                         }
                     }
 
