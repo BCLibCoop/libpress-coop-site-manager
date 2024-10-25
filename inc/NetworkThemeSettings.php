@@ -19,13 +19,14 @@ class NetworkThemeSettings
             'header_image' => 'Header Image',
             'background_image' => 'Background Image',
             'show_sidebar' => 'Show Sidebar',
-            'footer_menu_order' => 'Footer Menu',
+            'footer_menu_order' => [
+                'label' => 'Footer Menu',
+                'return' => [self::class, 'checkMenuLocation'],
+            ],
             'topbar_location' => 'Top Bar Location',
             'menu_justification' => 'Menu Justification',
         ],
         'Calendar Settings' => [
-            'tec_single_before_html' => 'Hide Single-Event Before HTML (Legacy)',
-            'tec_single_after_html' => 'Hide Single-Event After HTML (Legacy)',
             'libpress_tec_default_cats' => [
                 'label' => 'Default Calendar Categories',
                 'type' => 'option',
@@ -38,18 +39,26 @@ class NetworkThemeSettings
                 'label' => 'Excluded Categories',
                 'type' => 'option',
             ],
+            'options_libpress_tec_content' => [
+                'label' => 'Before/After Content',
+                'type' => 'option',
+                'return' => 'count',
+                'suffix' => ' Block(s) Defined',
+            ],
+            'tec_single_before_html' => 'Hide Single-Event Before HTML (Legacy)',
+            'tec_single_after_html' => 'Hide Single-Event After HTML (Legacy)',
             'libpress_tec_community_header' => [
                 'label' => 'Community Submission Page Header (Legacy)',
                 'type' => 'option',
                 'return' => 'strlen',
                 'suffix' => ' Characters',
             ],
-            'options_libpress_tec_content' => [
-                'label' => 'Before/After Content',
+            'tribe_events_calendar_options.confirmationEmailNotice' => [
+                'label' => 'Ticket Email Additional Content (Legacy)',
                 'type' => 'option',
-                'return' => 'count',
-                'suffix' => ' Block(s) Defined',
-            ]
+                'return' => 'strlen',
+                'suffix' => ' Characters',
+            ],
         ],
         'Search Settings' => [
             'search_style' => 'Search Box Style',
@@ -67,6 +76,17 @@ class NetworkThemeSettings
         'Widget Configuration' => [
         ],
     ];
+
+    /**
+     * Additional check for the footer menu being disabled because there is no
+     * menu in that position
+     */
+    private static function checkMenuLocation($value)
+    {
+        $menus = get_nav_menu_locations();
+
+        return empty($menus['secondary']) ? "{$value} - No Menu Set" : $value;
+    }
 
     public function __construct()
     {
@@ -151,25 +171,29 @@ class NetworkThemeSettings
                             $setting_val_safe = '';
                             $value_class = '';
 
+                            // Support dot-separated paths
+                            $setting_keys = explode('.', $setting);
+
                             if ($type === 'option') {
-                                $setting_val = get_option($setting, null);
+                                $setting_val = get_option($setting_keys[0], null);
                             } else {
-                                $setting_val = get_theme_mod($setting, null);
+                                $setting_val = get_theme_mod($setting_keys[0], null);
                             }
 
-                            // Run the 'return' function if we have one, and the
-                            // value isn't null
+                            unset($setting_keys[0]);
+
+                            foreach ($setting_keys as $setting_key) {
+                                if (!isset($setting_val[$setting_key])) {
+                                    $setting_val = null;
+                                    break;
+                                }
+
+                                $setting_val = $setting_val[$setting_key];
+                            }
+
+                            // Run the 'return' function if we have one, and the value isn't null
                             if ($setting_val !== null && is_callable($return)) {
                                 $setting_val = call_user_func($return, $setting_val) ?: null;
-                            }
-
-                            // TODO - Factor this out more generically
-                            if ($setting === 'footer_menu_order') {
-                                $menus = get_nav_menu_locations();
-
-                                if (empty($menus['secondary'])) {
-                                    $setting_val = "{$setting_val} - No Menu Set";
-                                }
                             }
 
                             if ($setting_val !== null) {
