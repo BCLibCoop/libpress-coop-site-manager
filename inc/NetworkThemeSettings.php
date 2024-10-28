@@ -45,20 +45,6 @@ class NetworkThemeSettings
                 'return' => 'count',
                 'suffix' => ' Block(s) Defined',
             ],
-            'tec_single_before_html' => 'Hide Single-Event Before HTML (Legacy)',
-            'tec_single_after_html' => 'Hide Single-Event After HTML (Legacy)',
-            'libpress_tec_community_header' => [
-                'label' => 'Community Submission Page Header (Legacy)',
-                'type' => 'option',
-                'return' => 'strlen',
-                'suffix' => ' Characters',
-            ],
-            'tribe_events_calendar_options.confirmationEmailNotice' => [
-                'label' => 'Ticket Email Additional Content (Legacy)',
-                'type' => 'option',
-                'return' => 'strlen',
-                'suffix' => ' Characters',
-            ],
         ],
         'Search Settings' => [
             'search_style' => 'Search Box Style',
