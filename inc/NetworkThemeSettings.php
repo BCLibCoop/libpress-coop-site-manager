@@ -2,10 +2,12 @@
 
 namespace BCLibCoop\SiteManager;
 
+use BCLibCoop\CoopHighlights\CoopHighlights;
+
 class NetworkThemeSettings
 {
     private static $settings = [
-        'Custom CSS' => [],
+        'Custom CSS' => [self::class, 'customCSS'],
         'Style Settings' => [
             'header_text' => 'Title and Tagline',
             'header_text_alignment' => 'Header Text Justification',
@@ -25,6 +27,17 @@ class NetworkThemeSettings
             ],
             'topbar_location' => 'Top Bar Location',
             'menu_justification' => 'Menu Justification',
+            'frontpage_content' => [
+                'label' => 'Frontpage Content',
+                'type' => 'custom',
+                'return' => [self::class, 'frontpageContent'],
+            ],
+            'highlights' => [
+                'label' => 'Highlights',
+                'type' => 'custom',
+                'post_type' => 'highlight',
+                'return' => [self::class, 'getHighlights'],
+            ],
         ],
         'Calendar Settings' => [
             'libpress_tec_default_cats' => [
@@ -59,20 +72,8 @@ class NetworkThemeSettings
                 'return' => 'count',
             ],
         ],
-        'Widget Configuration' => [
-        ],
+        'Widget Configuration' => [self::class, 'widgetAreas'],
     ];
-
-    /**
-     * Additional check for the footer menu being disabled because there is no
-     * menu in that position
-     */
-    private static function checkMenuLocation($value)
-    {
-        $menus = get_nav_menu_locations();
-
-        return empty($menus['secondary']) ? "{$value} - No Menu Set" : $value;
-    }
 
     public function __construct()
     {
@@ -145,92 +146,104 @@ class NetworkThemeSettings
 
                     $settings_html = array_fill_keys(array_keys(self::$settings), '');
 
-                    // Theme Mods/Options
                     foreach (self::$settings as $settings_section_name => $settings_section) {
+                        if (is_callable($settings_section)) {
+                            call_user_func_array($settings_section, [&$settings_html]);
+                            continue;
+                        }
+
                         foreach ($settings_section as $setting => $setting_option) {
                             $label = $setting_option['label'] ?? $setting_option ?? 'Unknown';
                             $type = $setting_option['type'] ?? 'theme_mod';
                             $return = $setting_option['return'] ?? null;
                             $suffix = $setting_option['suffix'] ?? '';
+                            $post_type = $setting_option['post_type'] ?? 'attachment';
 
-                            $setting_val = null;
-                            $setting_val_safe = '';
+                            $setting_vals = null;
+                            $setting_val_safe = [];
                             $value_class = '';
 
                             // Support dot-separated paths
                             $setting_keys = explode('.', $setting);
 
                             if ($type === 'option') {
-                                $setting_val = get_option($setting_keys[0], null);
-                            } else {
-                                $setting_val = get_theme_mod($setting_keys[0], null);
+                                $setting_vals = get_option($setting_keys[0], null);
+                            } elseif ($type === 'theme_mod') {
+                                $setting_vals = get_theme_mod($setting_keys[0], null);
                             }
 
                             unset($setting_keys[0]);
 
                             foreach ($setting_keys as $setting_key) {
-                                if (!isset($setting_val[$setting_key])) {
-                                    $setting_val = null;
+                                if (!isset($setting_vals[$setting_key])) {
+                                    $setting_vals = null;
                                     break;
                                 }
 
-                                $setting_val = $setting_val[$setting_key];
+                                $setting_vals = $setting_vals[$setting_key];
                             }
 
                             // Run the 'return' function if we have one, and the value isn't null
-                            if ($setting_val !== null && is_callable($return)) {
-                                $setting_val = call_user_func($return, $setting_val) ?: null;
+                            if (($setting_vals !== null || $type === 'custom') && is_callable($return)) {
+                                $setting_vals = call_user_func($return, $setting_vals) ?: null;
                             }
 
-                            if ($setting_val !== null) {
-                                // Implode any array values
-                                $setting_val = implode(', ', (array) $setting_val);
+                            if ($setting_vals !== null) {
+                                // Cast to array to run for all values
+                                $setting_vals = (array) $setting_vals;
 
-                                // Show boolean-like as true/false, unless the result is from
-                                // a return function that should be numeric
-                                if (
-                                    ! in_array($return, ['strlen', 'count', 'intval'])
-                                    && filter_var(
-                                        $setting_val,
-                                        FILTER_VALIDATE_BOOLEAN,
-                                        FILTER_NULL_ON_FAILURE
-                                    ) !== null
-                                ) {
-                                    $setting_val = var_export((bool) $setting_val, true);
-                                    $value_class = "value-{$setting_val}";
-                                }
-
-                                // Process URLs
-                                if (strpos($setting_val, 'http') === 0) {
-                                    if ($attachment_id = attachment_url_to_postid($setting_val)) {
-                                        $setting_val = $attachment_id;
+                                foreach ($setting_vals as &$setting_val) {
+                                    // Show boolean-like as true/false, unless the result is from
+                                    // a return function that should be numeric
+                                    if (
+                                        ! in_array($return, ['strlen', 'count', 'intval'])
+                                        && filter_var(
+                                            $setting_val,
+                                            FILTER_VALIDATE_BOOLEAN,
+                                            FILTER_NULL_ON_FAILURE
+                                        ) !== null
+                                    ) {
+                                        $setting_val = var_export((bool) $setting_val, true);
+                                        $value_class = "value-{$setting_val}";
                                     }
 
-                                    // Trim down any remaining URLs a bit
-                                    $setting_val = str_replace(home_url(), '', $setting_val);
+                                    // Process URLs
+                                    if (strpos($setting_val, 'http') === 0) {
+                                        if ($attachment_id = attachment_url_to_postid($setting_val)) {
+                                            $setting_val = $attachment_id;
+                                        }
+
+                                        // Trim down any remaining URLs a bit
+                                        $setting_val = str_replace(home_url(), '', $setting_val);
+                                    }
+
+                                    // Provide Edit links if possible (could provide false-positives)
+                                    if (
+                                        is_numeric($setting_val)
+                                        && get_post_type((int) $setting_val) === $post_type
+                                        && $edit_link = get_edit_post_link((int) $setting_val, 'raw')
+                                    ) {
+                                        // We're making sure this is sanitized HTML
+                                        $setting_val_safe[] = sprintf(
+                                            '<a href="%s">%d</a>',
+                                            esc_attr($edit_link),
+                                            (int) $setting_val
+                                        );
+
+                                        // Unset the normal value so it is not output
+                                        $setting_val = null;
+                                    }
                                 }
 
-                                // Provide Edit links if possible (could provide false-positives)
-                                if (
-                                    is_numeric($setting_val)
-                                    && get_post_type((int) $setting_val) === 'attachment'
-                                    && $edit_link = get_edit_post_link((int) $setting_val, 'raw')
-                                ) {
-                                    // We're making sure this is sanitized HTML
-                                    $setting_val_safe = sprintf(
-                                        '<a href="%s">%d</a>',
-                                        esc_attr($edit_link),
-                                        (int) $setting_val
-                                    );
-                                    // Unset the normal value so it is not output
-                                    $setting_val = '';
-                                }
+                                // Implode back to string
+                                $setting_vals = implode(', ', array_filter($setting_vals));
+                                $setting_val_safe = implode(', ', $setting_val_safe);
 
                                 $settings_html[$settings_section_name] .= sprintf(
                                     '<div><strong>%s:</strong> <span class="%s">%s%s%s</span></div>',
                                     esc_html($label),
                                     esc_attr($value_class),
-                                    esc_html($setting_val),
+                                    esc_html($setting_vals),
                                     $setting_val_safe,
                                     esc_html($suffix)
                                 );
@@ -238,69 +251,16 @@ class NetworkThemeSettings
                         }
                     }
 
-                    // Custom CSS
-                    $css = wp_get_custom_css();
-                    $css_post = wp_get_custom_css_post(get_stylesheet());
-
-                    $settings_html['Custom CSS'] .= sprintf(
-                        '<textarea rows="5" style="width: 100%%;" %s>%s</textarea>'
-                        . '<span>%d lines</span>&nbsp;<span>(Last updated %s)',
-                        empty($css) ? 'readonly disabled' : 'readonly',
-                        esc_textarea($css),
-                        substr_count($css, PHP_EOL),
-                        get_the_modified_date('Y-m-d', $css_post)
-                    );
-
-                    // Frontpage Content
-                    $front_page = (int) get_option('page_on_front');
-
-                    if (!empty($front_page) && $front_post = get_post($front_page)) {
-                        if (
-                            get_post_modified_time('U', false, $front_post) > 1646000000
-                            && !empty(trim(get_the_content(null, false, $front_post)))
-                        ) {
-                            $settings_html['Style Settings'] .= sprintf(
-                                '<div><strong>%s:</strong> %s</div>',
-                                'Frontpage Content',
-                                'true'
-                            );
-                        }
-                    }
-
-                    // Widget Areas
-                    if ($sidebars = wp_get_sidebars_widgets()) {
-                        foreach ($sidebars as $sidebar_name => $widgets) {
-                            if (
-                                $sidebar_name === 'wp_inactive_widgets'
-                                || substr($sidebar_name, 0, 16) === 'orphaned_widgets'
-                                // || count($widgets) < 1
-                            ) {
-                                continue;
-                            }
-
-                            $sidebar_name = wp_get_sidebar($sidebar_name)['name'];
-
-                            $settings_html['Widget Configuration'] .= sprintf(
-                                '<div><strong>%s:</strong> <span class="%s">%s</span></div>',
-                                "{$sidebar_name} Widgets",
-                                'value-' . count($widgets),
-                                count($widgets)
-                            );
-                        }
-                    }
-
                     // Row actions
-                    $actions = [
+                    $row_actions = '<div class="row-actions"><span>';
+                    $row_actions .= join(' | </span><span>', [
                         '<a href="' . esc_url(home_url('/')) . '" rel="bookmark">Visit</a>',
                         '<a href="' . esc_url(network_admin_url('site-info.php?id=' . $blog->blog_id)) . '">Edit</a>',
                         '<a href="' . esc_url(admin_url()) . '" class="edit">Dashboard</a>',
                         '<a href="'
                             . esc_url(add_query_arg('autofocus[section]', 'custom_css', admin_url('customize.php')))
                             . '">Edit CSS</a>'
-                    ];
-
-                    $row_actions = '<div class="row-actions"><span>';
-                    $row_actions .= join(' | </span><span>', $actions);
+                    ]);
                     $row_actions .= '</span></div>';
 
                     // Output row
@@ -325,5 +285,87 @@ class NetworkThemeSettings
             </table>
         </div><!-- .wrap -->
         <?php
+    }
+
+    /**
+     * Additional check for the footer menu being disabled because there is no
+     * menu in that position
+     */
+    private static function checkMenuLocation($value)
+    {
+        $menus = get_nav_menu_locations();
+
+        return empty($menus['secondary']) ? "{$value} - No Menu Set" : $value;
+    }
+
+    /**
+     * Check if there is content on the front-page post that's intentional
+     */
+    private static function frontpageContent()
+    {
+        $front_page = (int) get_option('page_on_front');
+        $front_post = !empty($front_page) ? get_post($front_page) : null;
+
+        return (
+            $front_post
+            && get_post_modified_time('U', false, $front_post) > 1646000000
+            && !empty(trim(get_the_content(null, false, $front_post)))
+        );
+    }
+
+    private static function getHighlights()
+    {
+        if (!class_exists(CoopHighlights::class)) {
+            return null;
+        }
+
+        return array_map(function($highlight) {
+            return $highlight ? $highlight->ID : false;
+        }, CoopHighlights::highlightsPosts(true));
+    }
+
+    /**
+     * Get custom CSS and updated date
+     */
+    private static function customCSS(&$settings_html)
+    {
+        $css = wp_get_custom_css();
+        $css_post = wp_get_custom_css_post(get_stylesheet());
+
+        $settings_html['Custom CSS'] .= sprintf(
+            '<textarea rows="5" style="width: 100%%;" %s>%s</textarea>'
+            . '<span>%d lines</span>&nbsp;<span>(Last updated %s)',
+            empty($css) ? 'readonly disabled' : 'readonly',
+            esc_textarea($css),
+            substr_count($css, PHP_EOL),
+            get_the_modified_date('Y-m-d', $css_post)
+        );
+    }
+
+    /**
+     * Get count of widgets in the widget areas
+     */
+    private static function widgetAreas(&$settings_html)
+    {
+        if ($sidebars = wp_get_sidebars_widgets()) {
+            foreach ($sidebars as $sidebar_name => $widgets) {
+                if (
+                    $sidebar_name === 'wp_inactive_widgets'
+                    || substr($sidebar_name, 0, 16) === 'orphaned_widgets'
+                    // || count($widgets) < 1
+                ) {
+                    continue;
+                }
+
+                $sidebar_name = wp_get_sidebar($sidebar_name)['name'];
+
+                $settings_html['Widget Configuration'] .= sprintf(
+                    '<div><strong>%s:</strong> <span class="%s">%s</span></div>',
+                    "{$sidebar_name} Widgets",
+                    'value-' . count($widgets),
+                    count($widgets)
+                );
+            }
+        }
     }
 }
