@@ -100,7 +100,7 @@ class NetworkSitkaLibraries
                 <div class="tablenav bottom">
                     <button class="button button-primary sitka-libraries-save-btn">Save changes</button>
                 </div>
-                <?php echo wp_nonce_field('admin_post', 'coop_sitka_libraries_nonce') ?>
+                <?php wp_nonce_field('admin_post', 'coop_sitka_libraries_nonce') ?>
                 <input type="hidden" name="action" value="sitka_libraries">
             </form>
         </div><!-- .wrap -->
