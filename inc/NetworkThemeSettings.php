@@ -30,6 +30,7 @@ class NetworkThemeSettings
             'frontpage_content' => [
                 'label' => 'Frontpage Content',
                 'type' => 'custom',
+                'post_type' => 'page',
                 'return' => [self::class, 'frontpageContent'],
             ],
             'highlights' => [
@@ -38,6 +39,8 @@ class NetworkThemeSettings
                 'post_type' => 'highlight',
                 'return' => [self::class, 'getHighlights'],
             ],
+            'blog_thumbnail' => 'Featured Image',
+            'legacy_width' => 'Legacy Content Width',
         ],
         'Calendar Settings' => [
             'libpress_tec_default_cats' => [
@@ -310,7 +313,7 @@ class NetworkThemeSettings
             $front_post
             && get_post_modified_time('U', false, $front_post) > 1646000000
             && !empty(trim(get_the_content(null, false, $front_post)))
-        );
+        ) ? $front_post->ID : false;
     }
 
     private static function getHighlights()
