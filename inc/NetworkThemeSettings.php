@@ -109,12 +109,7 @@ class NetworkThemeSettings
             // User is not a network admin
             wp_die('Sorry, you do not have permission to access this page');
         }
-
-        // Get all active blogs
-        $blogs = get_sites([
-            'archived' => 0,
-            'deleted' => 0,
-        ]); ?>
+        ?>
 
         <style>
             .value-false,
@@ -142,152 +137,166 @@ class NetworkThemeSettings
                     </tr>
                 </thead>
 
-                <?php
-                // Loop through each blog lookup options and output form
-                foreach ($blogs as $blog) :
-                    switch_to_blog($blog->blog_id);
-
-                    $settings_html = array_fill_keys(array_keys(self::$settings), '');
-
-                    foreach (self::$settings as $settings_section_name => $settings_section) {
-                        if (is_callable($settings_section)) {
-                            call_user_func_array($settings_section, [&$settings_html]);
-                            continue;
-                        }
-
-                        foreach ($settings_section as $setting => $setting_option) {
-                            $label = $setting_option['label'] ?? $setting_option ?? 'Unknown';
-                            $type = $setting_option['type'] ?? 'theme_mod';
-                            $return = $setting_option['return'] ?? null;
-                            $suffix = $setting_option['suffix'] ?? '';
-                            $post_type = $setting_option['post_type'] ?? 'attachment';
-
-                            $setting_vals = null;
-                            $setting_val_safe = [];
-                            $value_class = '';
-
-                            // Support dot-separated paths
-                            $setting_keys = explode('.', $setting);
-
-                            if ($type === 'option') {
-                                $setting_vals = get_option($setting_keys[0], null);
-                            } elseif ($type === 'theme_mod') {
-                                $setting_vals = get_theme_mod($setting_keys[0], null);
-                            }
-
-                            unset($setting_keys[0]);
-
-                            foreach ($setting_keys as $setting_key) {
-                                if (!isset($setting_vals[$setting_key])) {
-                                    $setting_vals = null;
-                                    break;
-                                }
-
-                                $setting_vals = $setting_vals[$setting_key];
-                            }
-
-                            // Run the 'return' function if we have one, and the value isn't null
-                            if (($setting_vals !== null || $type === 'custom') && is_callable($return)) {
-                                $setting_vals = call_user_func($return, $setting_vals) ?: null;
-                            }
-
-                            if ($setting_vals !== null) {
-                                // Cast to array to run for all values
-                                $setting_vals = (array) $setting_vals;
-
-                                foreach ($setting_vals as &$setting_val) {
-                                    // Show boolean-like as true/false, unless the result is from
-                                    // a return function that should be numeric
-                                    if (
-                                        ! in_array($return, ['strlen', 'count', 'intval'])
-                                        && filter_var(
-                                            $setting_val,
-                                            FILTER_VALIDATE_BOOLEAN,
-                                            FILTER_NULL_ON_FAILURE
-                                        ) !== null
-                                    ) {
-                                        $setting_val = var_export((bool) $setting_val, true);
-                                        $value_class = "value-{$setting_val}";
-                                    }
-
-                                    // Process URLs
-                                    if (strpos($setting_val, 'http') === 0) {
-                                        if ($attachment_id = attachment_url_to_postid($setting_val)) {
-                                            $setting_val = $attachment_id;
-                                        }
-
-                                        // Trim down any remaining URLs a bit
-                                        $setting_val = str_replace(home_url(), '', $setting_val);
-                                    }
-
-                                    // Provide Edit links if possible (could provide false-positives)
-                                    if (
-                                        is_numeric($setting_val)
-                                        && get_post_type((int) $setting_val) === $post_type
-                                        && $edit_link = get_edit_post_link((int) $setting_val, 'raw')
-                                    ) {
-                                        // We're making sure this is sanitized HTML
-                                        $setting_val_safe[] = sprintf(
-                                            '<a href="%s">%d</a>',
-                                            esc_attr($edit_link),
-                                            (int) $setting_val
-                                        );
-
-                                        // Unset the normal value so it is not output
-                                        $setting_val = null;
-                                    }
-                                }
-
-                                // Implode back to string
-                                $setting_vals = implode(', ', array_filter($setting_vals));
-                                $setting_val_safe = implode(', ', $setting_val_safe);
-
-                                $settings_html[$settings_section_name] .= sprintf(
-                                    '<div><strong>%s:</strong> <span class="%s">%s%s%s</span></div>',
-                                    esc_html($label),
-                                    esc_attr($value_class),
-                                    esc_html($setting_vals),
-                                    $setting_val_safe,
-                                    esc_html($suffix)
-                                );
-                            }
-                        }
-                    }
-
-                    // Row actions
-                    $row_actions = '<div class="row-actions"><span>';
-                    $row_actions .= join(' | </span><span>', [
-                        '<a href="' . esc_url(home_url('/')) . '" rel="bookmark">Visit</a>',
-                        '<a href="' . esc_url(network_admin_url('site-info.php?id=' . $blog->blog_id)) . '">Edit</a>',
-                        '<a href="' . esc_url(admin_url()) . '" class="edit">Dashboard</a>',
-                        '<a href="'
-                            . esc_url(add_query_arg('autofocus[section]', 'custom_css', admin_url('customize.php')))
-                            . '">Edit CSS</a>'
-                    ]);
-                    $row_actions .= '</span></div>';
-
-                    // Output row
-                    $row = [
-                        '<tr>' .
-                            '<td class="column-posts">%d</td>' .
-                            '<td class="has-row-actions"><strong><a href="%s">%s</a></strong>%s</td>' .
-                            str_repeat('<td>%s</td>', count($settings_html)) .
-                        '</tr>',
-                        $blog->blog_id,
-                        esc_url(home_url('/')),
-                        esc_html($blog->domain),
-                        $row_actions,
-                    ];
-
-                    echo call_user_func_array('sprintf', array_merge($row, $settings_html));
-
-                    // Switch back to previous blog (main network blog)
-                    restore_current_blog();
-                endforeach; ?>
+                <tbody>
+                    <?php $this->networkLibraryRows(); ?>
+                </tbody>
 
             </table>
         </div><!-- .wrap -->
         <?php
+    }
+
+    /**
+     * Output the row for each blog
+     */
+    private function networkLibraryRows()
+    {
+        // Get all active blogs
+        $blogs = get_sites([
+            'archived' => 0,
+            'deleted' => 0,
+        ]);
+
+        // Loop through each blog lookup options and output form
+        foreach ($blogs as $blog) {
+            switch_to_blog($blog->blog_id);
+
+            $settings_html = array_fill_keys(array_keys(self::$settings), '');
+
+            foreach (self::$settings as $settings_section_name => $settings_section) {
+                if (is_callable($settings_section)) {
+                    call_user_func_array($settings_section, [&$settings_html]);
+                    continue;
+                }
+
+                foreach ($settings_section as $setting => $setting_option) {
+                    $label = $setting_option['label'] ?? $setting_option ?? 'Unknown';
+                    $type = $setting_option['type'] ?? 'theme_mod';
+                    $return = $setting_option['return'] ?? null;
+                    $suffix = $setting_option['suffix'] ?? '';
+                    $post_type = $setting_option['post_type'] ?? 'attachment';
+
+                    $setting_val = null;
+                    $setting_vals = [];
+                    $setting_vals_safe = [];
+                    $value_class = '';
+
+                    // Support dot-separated paths
+                    $setting_keys = explode('.', $setting);
+
+                    if ($type === 'option') {
+                        $setting_val = get_option($setting_keys[0], null);
+                    } elseif ($type === 'theme_mod') {
+                        $setting_val = get_theme_mod($setting_keys[0], null);
+                    }
+
+                    unset($setting_keys[0]);
+
+                    foreach ($setting_keys as $setting_key) {
+                        if (!isset($setting_val[$setting_key])) {
+                            $setting_val = null;
+                            break;
+                        }
+
+                        $setting_val = $setting_val[$setting_key];
+                    }
+
+                    // Run the 'return' function if we have one, and the value isn't null
+                    if (($setting_val !== null || $type === 'custom') && is_callable($return)) {
+                        $setting_val = call_user_func($return, $setting_val) ?: null;
+                    }
+
+                    if ($setting_val !== null) {
+                        // Cast to array to run for all values
+                        foreach ((array) $setting_val as $single_setting_val) {
+                            // Show boolean-like as true/false, unless the result is from
+                            // a return function that should be numeric
+                            if (
+                                ! in_array($return, ['strlen', 'count', 'intval'])
+                                && filter_var(
+                                    $single_setting_val,
+                                    FILTER_VALIDATE_BOOLEAN,
+                                    FILTER_NULL_ON_FAILURE
+                                ) !== null
+                            ) {
+                                $single_setting_val = var_export((bool) $single_setting_val, true);
+                                $value_class = "value-{$single_setting_val}";
+                            }
+
+                            // Process URLs
+                            if (strpos($single_setting_val, 'http') === 0) {
+                                if ($attachment_id = attachment_url_to_postid($single_setting_val)) {
+                                    $single_setting_val = $attachment_id;
+                                }
+
+                                // Trim down any remaining URLs a bit
+                                $single_setting_val = str_replace(home_url(), '', $single_setting_val);
+                            }
+
+                            // Provide Edit links if possible (could provide false-positives)
+                            if (
+                                is_numeric($single_setting_val)
+                                && get_post_type((int) $single_setting_val) === $post_type
+                                && $edit_link = get_edit_post_link((int) $single_setting_val, 'raw')
+                            ) {
+                                // We're making sure this is sanitized HTML
+                                $setting_vals_safe[] = sprintf(
+                                    '<a href="%s">%d</a>',
+                                    esc_attr($edit_link),
+                                    (int) $single_setting_val
+                                );
+
+                                // Unset the normal value so it is not output
+                                $single_setting_val = null;
+                            }
+
+                            if ($single_setting_val !== null) {
+                                $setting_vals[] = $single_setting_val;
+                            }
+                        }
+
+                        $settings_html[$settings_section_name] .= sprintf(
+                            '<div><strong>%s:</strong> <span class="%s">%s%s%s</span></div>',
+                            esc_html($label),
+                            esc_attr(count($setting_vals_safe) > 0 ? '' : $value_class),
+                            esc_html(implode(', ', array_filter($setting_vals))),
+                            implode(', ', $setting_vals_safe),
+                            esc_html($suffix)
+                        );
+                    }
+                }
+            }
+
+            // Row actions
+            $row_actions = '<div class="row-actions"><span>';
+            $row_actions .= join(' | </span><span>', [
+                '<a href="' . esc_url(home_url('/')) . '" rel="bookmark">Visit</a>',
+                '<a href="' . esc_url(network_admin_url('site-info.php?id=' . $blog->blog_id)) . '">Edit</a>',
+                '<a href="' . esc_url(admin_url()) . '" class="edit">Dashboard</a>',
+                '<a href="'
+                    . esc_url(add_query_arg('autofocus[section]', 'custom_css', admin_url('customize.php')))
+                    . '">Edit CSS</a>'
+            ]);
+            $row_actions .= '</span></div>';
+
+            // Output row
+            $row = [
+                '<tr>' .
+                    '<td class="column-posts">%d</td>' .
+                    '<td class="has-row-actions"><strong><a href="%s">%s</a></strong>%s</td>' .
+                    str_repeat('<td>%s</td>', count($settings_html)) .
+                '</tr>',
+                $blog->blog_id,
+                esc_url(home_url('/')),
+                esc_html($blog->domain),
+                $row_actions,
+            ];
+
+            echo call_user_func_array('sprintf', array_merge($row, $settings_html));
+
+            // Switch back to previous blog (main network blog)
+            restore_current_blog();
+        }
     }
 
     /**
