@@ -309,7 +309,10 @@ class NetworkThemeSettings
     {
         $menus = get_nav_menu_locations();
 
-        return empty($menus['secondary']) ? "{$value} - No Menu Set" : $value;
+        // Cast 'disabled' to false to get class highlight
+        $value = $value == 'disabled' ? false : $value;
+
+        return empty($menus['secondary']) ? [false, $value] : $value;
     }
 
     /**
