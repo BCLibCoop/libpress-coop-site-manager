@@ -66,6 +66,7 @@ class NetworkThemeSettings
                 'type' => 'option',
                 'return' => 'count',
                 'suffix' => ' Block(s) Defined',
+                'class' => '',
             ],
         ],
         'Search Settings' => [
@@ -180,6 +181,7 @@ class NetworkThemeSettings
                     $type = $setting_option['type'] ?? 'theme_mod';
                     $return = $setting_option['return'] ?? null;
                     $suffix = $setting_option['suffix'] ?? '';
+                    $class = $setting_option['class'] ?? 'code';
                     $object_type = $setting_option['object_type'] ?? 'attachment';
                     $taxonomy = $setting_option['taxonomy'] ?? null;
 
@@ -215,7 +217,7 @@ class NetworkThemeSettings
                         // Cast to array to run for all values
                         foreach ((array) $setting_val as $single_setting_val) {
                             // Reset per-loop variables
-                            $value_class = '';
+                            $value_classes = array_filter([$class]);
                             $safe_html = false;
 
                             // Show boolean-like as true/false, unless the result is from
@@ -229,7 +231,7 @@ class NetworkThemeSettings
                                 ) !== null
                             ) {
                                 $single_setting_val = var_export((bool) $single_setting_val, true);
-                                $value_class = "value-{$single_setting_val}";
+                                $value_classes[] = "value-{$single_setting_val}";
                             }
 
                             // Process URLs
@@ -275,7 +277,7 @@ class NetworkThemeSettings
 
                             $setting_vals[] = sprintf(
                                 '<span class="%s">%s%s</span>',
-                                esc_attr($value_class),
+                                esc_attr(implode(' ', $value_classes)),
                                 $safe_html ? $single_setting_val : esc_html($single_setting_val),
                                 esc_html($suffix)
                             );
@@ -374,7 +376,7 @@ class NetworkThemeSettings
         $css_post = wp_get_custom_css_post(get_stylesheet());
 
         $settings_html['Custom CSS'] .= sprintf(
-            '<textarea rows="5" style="width: 100%%;" %s>%s</textarea>'
+            '<textarea rows="5" class="code" style="width: 100%%;" %s>%s</textarea>'
             . '<span>%d lines</span>&nbsp;<span>(Last updated %s)',
             empty($css) ? 'readonly disabled' : 'readonly',
             esc_textarea($css),
@@ -401,7 +403,7 @@ class NetworkThemeSettings
                 $sidebar_name = wp_get_sidebar($sidebar_name)['name'];
 
                 $settings_html['Widget Configuration'] .= sprintf(
-                    '<div><strong>%1$s Widgets:</strong> <span class="value-%2$d">%2$d</span></div>',
+                    '<div><strong>%1$s Widgets:</strong> <span class="code value-%2$d">%2$d</span></div>',
                     esc_html($sidebar_name),
                     count($widgets),
                 );
