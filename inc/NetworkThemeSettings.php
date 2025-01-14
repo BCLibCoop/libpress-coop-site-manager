@@ -30,13 +30,13 @@ class NetworkThemeSettings
             'frontpage_content' => [
                 'label' => 'Frontpage Content',
                 'type' => 'custom',
-                'post_type' => 'page',
+                'object_type' => 'page',
                 'return' => [self::class, 'frontpageContent'],
             ],
             'highlights' => [
                 'label' => 'Highlights',
                 'type' => 'custom',
-                'post_type' => 'highlight',
+                'object_type' => 'highlight',
                 'return' => [self::class, 'getHighlights'],
             ],
             'blog_thumbnail' => 'Featured Image',
@@ -46,14 +46,20 @@ class NetworkThemeSettings
             'libpress_tec_default_cats' => [
                 'label' => 'Default Calendar Categories',
                 'type' => 'option',
+                'object_type' => 'tribe_events',
+                'taxonomy' => 'tribe_events_cat',
             ],
             'libpress_tec_default_cats_comm' => [
                 'label' => 'Community Submitted Categories',
                 'type' => 'option',
+                'object_type' => 'tribe_events',
+                'taxonomy' => 'tribe_events_cat',
             ],
             'libpress_tec_main_exclude' => [
                 'label' => 'Excluded Categories',
                 'type' => 'option',
+                'object_type' => 'tribe_events',
+                'taxonomy' => 'tribe_events_cat',
             ],
             'options_libpress_tec_content' => [
                 'label' => 'Before/After Content',
@@ -174,7 +180,8 @@ class NetworkThemeSettings
                     $type = $setting_option['type'] ?? 'theme_mod';
                     $return = $setting_option['return'] ?? null;
                     $suffix = $setting_option['suffix'] ?? '';
-                    $post_type = $setting_option['post_type'] ?? 'attachment';
+                    $object_type = $setting_option['object_type'] ?? 'attachment';
+                    $taxonomy = $setting_option['taxonomy'] ?? null;
 
                     $setting_val = null;
                     $setting_vals = [];
@@ -236,21 +243,34 @@ class NetworkThemeSettings
                             }
 
                             // Provide Edit links if possible (could provide false-positives)
-                            // TODO: Support taxonomy term IDs
-                            if (
-                                is_numeric($single_setting_val)
-                                && get_post_type((int) $single_setting_val) === $post_type
-                                && $edit_link = get_edit_post_link((int) $single_setting_val, 'raw')
-                            ) {
-                                // We're making sure this is sanitized HTML
-                                $safe_html = true;
+                            if (is_numeric($single_setting_val)) {
+                                $edit_link = null;
 
-                                $single_setting_val = sprintf(
-                                    '<a href="%s">%d%s</a>',
-                                    esc_url($edit_link),
-                                    (int) $single_setting_val,
-                                    esc_html($suffix)
-                                );
+                                if ($taxonomy) {
+                                    // Can't get taxonomies of a multisite, so blindly build an edit link
+                                    $edit_link = add_query_arg(
+                                        [
+                                            'taxonomy' => $taxonomy,
+                                            'tag_ID'   => $single_setting_val,
+                                            'post_type' => $object_type,
+                                        ],
+                                        admin_url('term.php')
+                                    );
+                                } elseif (get_post_type((int) $single_setting_val) === $object_type) {
+                                    $edit_link = get_edit_post_link((int) $single_setting_val, 'raw');
+                                }
+
+                                if (!empty($edit_link)) {
+                                    // We're making sure this is sanitized HTML
+                                    $safe_html = true;
+
+                                    $single_setting_val = sprintf(
+                                        '<a href="%s">%d%s</a>',
+                                        esc_url($edit_link),
+                                        (int) $single_setting_val,
+                                        esc_html($suffix)
+                                    );
+                                }
                             }
 
                             $setting_vals[] = sprintf(
@@ -262,11 +282,11 @@ class NetworkThemeSettings
                         }
 
                         if (!empty($setting_vals)) {
-                        $settings_html[$settings_section_name] .= sprintf(
-                            '<div><strong>%s:</strong> %s</div>',
-                            esc_html($label),
-                            implode(', ', $setting_vals),
-                        );
+                            $settings_html[$settings_section_name] .= sprintf(
+                                '<div><strong>%s:</strong> %s</div>',
+                                esc_html($label),
+                                implode(', ', $setting_vals),
+                            );
                         }
                     }
                 }
