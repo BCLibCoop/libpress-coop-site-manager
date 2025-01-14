@@ -236,6 +236,7 @@ class NetworkThemeSettings
                             }
 
                             // Provide Edit links if possible (could provide false-positives)
+                            // TODO: Support taxonomy term IDs
                             if (
                                 is_numeric($single_setting_val)
                                 && get_post_type((int) $single_setting_val) === $post_type
@@ -275,6 +276,7 @@ class NetworkThemeSettings
                 '<a href="' . esc_url(home_url('/')) . '" rel="bookmark">Visit</a>',
                 '<a href="' . esc_url(network_admin_url('site-info.php?id=' . $blog->blog_id)) . '">Edit</a>',
                 '<a href="' . esc_url(admin_url()) . '" class="edit">Dashboard</a>',
+                '<a href="' . esc_url(admin_url('widgets.php')) . '">Widgets</a>',
                 '<a href="'
                     . esc_url(add_query_arg('autofocus[section]', 'custom_css', admin_url('customize.php')))
                     . '">Edit CSS</a>'
