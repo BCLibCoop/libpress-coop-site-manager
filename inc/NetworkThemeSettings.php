@@ -372,10 +372,9 @@ class NetworkThemeSettings
                 $sidebar_name = wp_get_sidebar($sidebar_name)['name'];
 
                 $settings_html['Widget Configuration'] .= sprintf(
-                    '<div><strong>%s:</strong> <span class="%s">%s</span></div>',
-                    "{$sidebar_name} Widgets",
-                    'value-' . count($widgets),
-                    count($widgets)
+                    '<div><strong>%1$s Widgets:</strong> <span class="value-%2$d">%2$d</span></div>',
+                    esc_html($sidebar_name),
+                    count($widgets),
                 );
             }
         }
