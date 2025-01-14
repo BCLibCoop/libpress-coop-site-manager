@@ -178,8 +178,6 @@ class NetworkThemeSettings
 
                     $setting_val = null;
                     $setting_vals = [];
-                    $setting_vals_safe = [];
-                    $value_class = '';
 
                     // Support dot-separated paths
                     $setting_keys = explode('.', $setting);
@@ -209,6 +207,10 @@ class NetworkThemeSettings
                     if ($setting_val !== null) {
                         // Cast to array to run for all values
                         foreach ((array) $setting_val as $single_setting_val) {
+                            // Reset per-loop variables
+                            $value_class = '';
+                            $safe_html = false;
+
                             // Show boolean-like as true/false, unless the result is from
                             // a return function that should be numeric
                             if (
@@ -240,28 +242,28 @@ class NetworkThemeSettings
                                 && $edit_link = get_edit_post_link((int) $single_setting_val, 'raw')
                             ) {
                                 // We're making sure this is sanitized HTML
-                                $setting_vals_safe[] = sprintf(
-                                    '<a href="%s">%d</a>',
-                                    esc_attr($edit_link),
-                                    (int) $single_setting_val
+                                $safe_html = true;
+
+                                $single_setting_val = sprintf(
+                                    '<a href="%s">%d%s</a>',
+                                    esc_url($edit_link),
+                                    (int) $single_setting_val,
+                                    esc_html($suffix)
                                 );
-
-                                // Unset the normal value so it is not output
-                                $single_setting_val = null;
                             }
 
-                            if ($single_setting_val !== null) {
-                                $setting_vals[] = $single_setting_val;
-                            }
+                            $setting_vals[] = sprintf(
+                                '<span class="%s">%s%s</span>',
+                                esc_attr($value_class),
+                                $safe_html ? $single_setting_val : esc_html($single_setting_val),
+                                esc_html($suffix)
+                            );
                         }
 
                         $settings_html[$settings_section_name] .= sprintf(
-                            '<div><strong>%s:</strong> <span class="%s">%s%s%s</span></div>',
+                            '<div><strong>%s:</strong> %s</div>',
                             esc_html($label),
-                            esc_attr(count($setting_vals_safe) > 0 ? '' : $value_class),
-                            esc_html(implode(', ', array_filter($setting_vals))),
-                            implode(', ', $setting_vals_safe),
-                            esc_html($suffix)
+                            implode(', ', $setting_vals),
                         );
                     }
                 }
