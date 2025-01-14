@@ -127,6 +127,15 @@ class NetworkThemeSettings
             .value-true {
                 color: green;
             }
+
+            textarea.code {
+                width: 100%;
+            }
+
+            [title]:not([title=""]),
+            [title]:not([title=""]) a {
+                cursor: help;
+            }
         </style>
 
         <div class="wrap">
@@ -219,6 +228,12 @@ class NetworkThemeSettings
                             // Reset per-loop variables
                             $value_classes = array_filter([$class]);
                             $safe_html = false;
+                            $title = '';
+
+                            if (is_array($single_setting_val)) {
+                                $title = $single_setting_val[1];
+                                $single_setting_val = $single_setting_val[0];
+                            }
 
                             // Show boolean-like as true/false, unless the result is from
                             // a return function that should be numeric
@@ -237,11 +252,12 @@ class NetworkThemeSettings
                             // Process URLs
                             if (strpos($single_setting_val, 'http') === 0) {
                                 if ($attachment_id = attachment_url_to_postid($single_setting_val)) {
+                                    $title = str_replace(home_url(), '', $single_setting_val);
                                     $single_setting_val = $attachment_id;
+                                } else {
+                                    // Trim down any remaining URLs a bit
+                                    $single_setting_val = str_replace(home_url(), '', $single_setting_val);
                                 }
-
-                                // Trim down any remaining URLs a bit
-                                $single_setting_val = str_replace(home_url(), '', $single_setting_val);
                             }
 
                             // Provide Edit links if possible (could provide false-positives)
@@ -259,6 +275,7 @@ class NetworkThemeSettings
                                         admin_url('term.php')
                                     );
                                 } elseif (get_post_type((int) $single_setting_val) === $object_type) {
+                                    $title = !empty($title) ? $title : get_the_title($single_setting_val);
                                     $edit_link = get_edit_post_link((int) $single_setting_val, 'raw');
                                 }
 
@@ -276,8 +293,9 @@ class NetworkThemeSettings
                             }
 
                             $setting_vals[] = sprintf(
-                                '<span class="%s">%s%s</span>',
+                                '<span class="%s" title="%s">%s%s</span>',
                                 esc_attr(implode(' ', $value_classes)),
+                                esc_attr($title),
                                 $safe_html ? $single_setting_val : esc_html($single_setting_val),
                                 esc_html($suffix)
                             );
@@ -336,9 +354,9 @@ class NetworkThemeSettings
         $menus = get_nav_menu_locations();
 
         // Cast 'disabled' to false to get class highlight
-        $value = $value == 'disabled' ? false : $value;
+        $value = $value == 'disabled' ? [false, 'Disabled in Customizer'] : $value;
 
-        return empty($menus['secondary']) ? [false, $value] : $value;
+        return empty($menus['secondary']) ? [[false, 'Menu Location Empty'], $value] : [$value];
     }
 
     /**
@@ -363,7 +381,7 @@ class NetworkThemeSettings
         }
 
         return array_map(function($highlight) {
-            return $highlight ? $highlight->ID : false;
+            return $highlight ? $highlight->ID : [false, 'No Highlight in Position'];
         }, CoopHighlights::highlightsPosts(true));
     }
 
@@ -376,7 +394,7 @@ class NetworkThemeSettings
         $css_post = wp_get_custom_css_post(get_stylesheet());
 
         $settings_html['Custom CSS'] .= sprintf(
-            '<textarea rows="5" class="code" style="width: 100%%;" %s>%s</textarea>'
+            '<textarea rows="5" class="code" %s>%s</textarea>'
             . '<span>%d lines</span>&nbsp;<span>(Last updated %s)',
             empty($css) ? 'readonly disabled' : 'readonly',
             esc_textarea($css),
