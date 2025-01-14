@@ -261,11 +261,13 @@ class NetworkThemeSettings
                             );
                         }
 
+                        if (!empty($setting_vals)) {
                         $settings_html[$settings_section_name] .= sprintf(
                             '<div><strong>%s:</strong> %s</div>',
                             esc_html($label),
                             implode(', ', $setting_vals),
                         );
+                        }
                     }
                 }
             }
