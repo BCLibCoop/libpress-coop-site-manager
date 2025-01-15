@@ -56,12 +56,6 @@ abstract class AbstractSiteManagerPage
 
         if (!empty($this->widgets)) {
             add_action('widgets_init', [$this, 'widgetsInit']);
-
-            add_filter('option_sidebars_widgets', [$this, 'legacySidebarConfig']);
-
-            foreach ($this->widgets as $widget_slug => $widget_class) {
-                add_filter('option_widget_' . $widget_slug, [$this, 'legacyWidgetInstance']);
-            }
         }
 
         if (file_exists(plugin_dir_path(SITEMANAGER_PLUGIN_FILE) . "views/shortcode/{$this::$slug}.php")) {
@@ -127,42 +121,6 @@ abstract class AbstractSiteManagerPage
         foreach ($this->widgets as $widget_slug => $widget_class) {
             register_widget($widget_class);
         }
-    }
-
-    /**
-     * Widget previously registered as a single widget, add an instance ID
-     * so they continue to function correctly
-     */
-    public function legacySidebarConfig($sidebars)
-    {
-        foreach ($sidebars as &$sidebar_widgets) {
-            if (is_array($sidebar_widgets)) {
-                foreach ($sidebar_widgets as &$widget) {
-                    if (
-                        in_array($widget, array_keys($this->widgets))
-                        && ! preg_match('/-\d$/', $widget)
-                    ) {
-                        $widget = $widget . '-1';
-                        break;
-                    }
-                }
-            }
-        }
-
-        return $sidebars;
-    }
-
-    /**
-     * Widget previously registered as a single widget, add a setting for
-     * the first instance if one doesn't exist
-     */
-    public function legacyWidgetInstance($widget_settings)
-    {
-        if (!isset($widget_settings[1])) {
-            $widget_settings[1] = [];
-        }
-
-        return $widget_settings;
     }
 
     public function addMenu()
