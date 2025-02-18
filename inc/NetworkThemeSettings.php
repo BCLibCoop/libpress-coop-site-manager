@@ -10,16 +10,22 @@ class NetworkThemeSettings
         'Custom CSS' => [self::class, 'customCSS'],
         'Style Settings' => [
             'header_text' => 'Title and Tagline',
+            'site_icon' => [
+                'label' => 'Site Icon',
+                'type' => 'option',
+                'return' => 'intval',
+            ],
             'header_text_alignment' => 'Header Text Justification',
+            'custom_logo' => 'Logo Image',
             'logo_alignment' => 'Logo Alignment',
             'logo_size' => [
                 'label' => 'Logo Size',
                 'return' => 'intval',
                 'suffix' => '%',
             ],
-            'custom_logo' => 'Logo Image',
             'header_image' => 'Header Image',
             'background_image' => 'Background Image',
+            'legacy_width' => 'Legacy Content Width',
             'show_sidebar' => 'Show Sidebar',
             'footer_menu_order' => [
                 'label' => 'Footer Menu',
@@ -39,8 +45,7 @@ class NetworkThemeSettings
                 'object_type' => 'highlight',
                 'return' => [self::class, 'getHighlights'],
             ],
-            'blog_thumbnail' => 'Featured Image',
-            'legacy_width' => 'Legacy Content Width',
+            'blog_thumbnail' => 'Blog Featured Image',
         ],
         'Calendar Settings' => [
             'libpress_tec_default_cats' => [
