@@ -14,6 +14,7 @@ class EventCalendarBeforeAfter extends AbstractSiteManagerPage
 
     protected $capability = 'manage_options'; // Admin only for now
     protected $position = 5;
+    protected $admin_script_deps = ['jquery', 'acf-input'];
 
     protected $locations = [
         'single_event' => [

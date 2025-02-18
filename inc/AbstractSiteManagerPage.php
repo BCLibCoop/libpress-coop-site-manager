@@ -22,6 +22,8 @@ abstract class AbstractSiteManagerPage
     protected $widgets = [];
     protected $settings_api = false;
     protected $capability = 'manage_local_site';
+    protected $admin_script_deps = ['jquery'];
+    protected $script_deps = [];
 
     public function __construct()
     {
@@ -101,7 +103,7 @@ abstract class AbstractSiteManagerPage
             wp_enqueue_script(
                 static::$slug . '-admin-js',
                 plugins_url($js_file, SITEMANAGER_PLUGIN_FILE),
-                ['jquery'],
+                $this->admin_script_deps,
                 filemtime(plugin_dir_path(SITEMANAGER_PLUGIN_FILE) . $js_file)
             );
         }
@@ -110,7 +112,7 @@ abstract class AbstractSiteManagerPage
             wp_enqueue_style(
                 static::$slug,
                 plugins_url($css_file, SITEMANAGER_PLUGIN_FILE),
-                [],
+                $this->script_deps,
                 filemtime(plugin_dir_path(SITEMANAGER_PLUGIN_FILE) . $css_file)
             );
         }
