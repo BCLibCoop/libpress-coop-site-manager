@@ -53,11 +53,22 @@ class EventCalendarBeforeAfter extends AbstractSiteManagerPage
 
         add_action('admin_enqueue_scripts', [$this, 'adminEnqueueStylesScripts']);
 
-        // Using option filter instead of output filter so we don't have to
-        // worry about getting within the right output <div>
-        // add_filter('tribe_events_before_html', [$this, 'insertContent'], 10);
-        // add_filter('tribe_events_after_html', [$this, 'insertContent'], 10);
+        // Hook the default before/after functions to community events so the rest
+        // of our logic doesn't need to change
+        add_filter('tec_community_tickets_before_html', function($output) {
+            ob_start();
+            echo $output;
+            tribe_events_before_html();
+            return ob_get_clean();
+        });
+        add_filter('tec_community_tickets_after_html', function($output) {
+            ob_start();
+            echo $output;
+            tribe_events_after_html();
+            return ob_get_clean();
+        });
 
+        // Hook on tribe options so we can catch before and after content
         add_filter('tribe_get_option', [$this, 'insertContent'], 100, 2);
 
         // Populate content array
