@@ -12,7 +12,6 @@ class EventCalendarBeforeAfter extends AbstractSiteManagerPage
     public static $menu_title = 'Event Calendar Content';
     public static $option_name = 'libpress_tec_content';
 
-    protected $capability = 'manage_options'; // Admin only for now
     protected $position = 5;
     protected $admin_script_deps = ['jquery', 'acf-input'];
 
