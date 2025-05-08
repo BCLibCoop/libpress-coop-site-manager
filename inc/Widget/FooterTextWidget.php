@@ -11,6 +11,9 @@ class FooterTextWidget extends AbstractCoopWidget
         $this->adminPage = CoopFooter::class;
         $this->slug = 'footer-text-widget';
         $this->name = 'Footer Text';
+        $this->options = [
+            'description' => 'Shows the text as entered in the Site Manager',
+        ];
 
         parent::__construct();
     }

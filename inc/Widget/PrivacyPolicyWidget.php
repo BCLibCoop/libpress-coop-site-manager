@@ -10,6 +10,9 @@ class PrivacyPolicyWidget extends AbstractCoopWidget
     {
         $this->slug = 'privacy-link-widget';
         $this->name = 'Privacy Policy Link';
+        $this->options = [
+            'description' => 'Displays a link to a post or page with the tag "privacy-policy"',
+        ];
 
         parent::__construct();
     }

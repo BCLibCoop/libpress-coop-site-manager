@@ -10,6 +10,9 @@ class TermsWidget extends AbstractCoopWidget
     {
         $this->slug = 'terms-link-widget';
         $this->name = 'Terms of Use Link';
+        $this->options = [
+            'description' => 'Displays a link to a post or page with the tag "terms-of-use"',
+        ];
 
         parent::__construct();
     }

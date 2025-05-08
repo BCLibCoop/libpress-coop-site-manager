@@ -50,7 +50,7 @@ abstract class AbstractCoopWidget extends WP_Widget
     {
         if (is_subclass_of($this->adminPage, AbstractSiteManagerPage::class)) {
             echo '<p class="no-options-widget">This widget is configured via the <a href="' .
-            admin_url('admin.php?page=' . $this->adminPage::$slug) . '">Site Manager</a></p>';
+                admin_url('admin.php?page=' . $this->adminPage::$slug) . '">Site Manager</a></p>';
 
             return 'noform';
         } else {

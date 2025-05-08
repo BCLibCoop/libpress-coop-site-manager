@@ -11,7 +11,10 @@ class CoopHoursBriefWidget extends AbstractCoopWidget
         $this->adminPage = CoopHours::class;
         $this->slug = 'brief-hours-widget';
         $this->name = 'Brief Hours';
-        $this->options = ['classname' => 'CoopHours_brief_hours_widget'];
+        $this->options = [
+            'classname' => 'CoopHours_brief_hours_widget',
+            'description' => 'A single horizontal row showing abbreviated operating hours',
+        ];
 
         parent::__construct();
     }
