@@ -202,7 +202,9 @@ class NetworkThemeSettings
                 }
 
                 foreach ($settings_section as $setting => $setting_option) {
+                    $setting = $setting_option['setting'] ?? $setting;
                     $label = $setting_option['label'] ?? $setting_option ?? 'Unknown';
+                    $default = $setting_option['default'] ?? null;
                     $type = $setting_option['type'] ?? 'theme_mod';
                     $return = $setting_option['return'] ?? null;
                     $suffix = $setting_option['suffix'] ?? '';
@@ -217,9 +219,9 @@ class NetworkThemeSettings
                     $setting_keys = explode('.', $setting);
 
                     if ($type === 'option') {
-                        $setting_val = get_option($setting_keys[0], null);
+                        $setting_val = get_option($setting_keys[0], $default);
                     } elseif ($type === 'theme_mod') {
-                        $setting_val = get_theme_mod($setting_keys[0], null);
+                        $setting_val = get_theme_mod($setting_keys[0], $default);
                     }
 
                     unset($setting_keys[0]);
