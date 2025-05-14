@@ -90,6 +90,17 @@ class NetworkThemeSettings
         'Widget Configuration' => [self::class, 'widgetAreas'],
     ];
 
+    private static $widgetOrder = [
+        'searchbox',
+        'header-1',
+        'myaccount-1',
+        'footer-1',
+        'footer-3',
+        'footer-4',
+        'footer-bottom',
+        'sidebar-1',
+    ];
+
     public function __construct()
     {
         add_action('network_admin_menu', [$this, 'networkAdminMenu']);
@@ -414,6 +425,16 @@ class NetworkThemeSettings
     private static function widgetAreas(&$settings_html)
     {
         if ($sidebars = wp_get_sidebars_widgets()) {
+            /**
+             * Sort the widget areas.
+             *
+             * First by a known order to catch any new/unknown areas
+             *
+             * Then by our defined custom order
+             */
+            ksort($sidebars);
+            uksort($sidebars, fn($key1, $key2) => (array_search($key1, self::$widgetOrder) <=> array_search($key2, self::$widgetOrder)));
+
             foreach ($sidebars as $sidebar_name => $widgets) {
                 if (
                     $sidebar_name === 'wp_inactive_widgets'
