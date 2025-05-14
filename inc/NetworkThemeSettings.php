@@ -25,13 +25,19 @@ class NetworkThemeSettings
             ],
             'header_image' => 'Header Image',
             'background_image' => 'Background Image',
-            'legacy_width' => 'Legacy Content Width',
-            'show_sidebar' => 'Show Sidebar',
-            'footer_menu_order' => [
+            'header_order' => [
+                'label' => 'Header Item Order',
+                'default' => false,
+                'return' => [self::class, 'checkHeaderOrder'],
+            ],
+            'footer_menu_order' => 'Footer Item Order',
+            'footer_menu' => [
+                'setting' => 'footer_menu_order',
                 'label' => 'Footer Menu',
                 'return' => [self::class, 'checkMenuLocation'],
             ],
-            'topbar_location' => 'Top Bar Location',
+            'legacy_width' => 'Legacy Content Width',
+            'show_sidebar' => 'Show Sidebar',
             'menu_justification' => 'Menu Justification',
             'frontpage_content' => [
                 'label' => 'Frontpage Content',
@@ -364,6 +370,20 @@ class NetworkThemeSettings
     }
 
     /**
+     * Map old header menu order value if not set
+     */
+    private static function checkHeaderOrder($value)
+    {
+        if ($value === false) {
+            return get_theme_mod('topbar_location', 'above') == 'above' ?
+                ['top-bar', 'info-banner', 'site-branding', 'primary-nav', 'slideshow'] :
+                ['site-branding', 'top-bar', 'info-banner', 'primary-nav', 'slideshow'];
+        }
+
+        return $value;
+    }
+
+    /**
      * Additional check for the footer menu being disabled because there is no
      * menu in that position
      */
@@ -372,7 +392,7 @@ class NetworkThemeSettings
         $menus = get_nav_menu_locations();
 
         // Cast 'disabled' to false to get class highlight
-        $value = $value == 'disabled' ? [false, 'Disabled in Customizer'] : $value;
+        $value = !in_array('secondary-nav', $value) ? [false, 'Disabled in Customizer'] : $value;
 
         return empty($menus['secondary']) ? [[false, 'Menu Location Empty'], $value] : [$value];
     }
@@ -398,7 +418,7 @@ class NetworkThemeSettings
             return null;
         }
 
-        return array_map(function($highlight) {
+        return array_map(function ($highlight) {
             return $highlight ? $highlight->ID : [false, 'No Highlight in Position'];
         }, CoopHighlights::highlightsPosts(true));
     }
