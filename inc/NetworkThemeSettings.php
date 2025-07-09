@@ -362,7 +362,7 @@ class NetworkThemeSettings
                 $row_actions,
             ];
 
-            echo call_user_func_array('sprintf', array_merge($row, $settings_html));
+            echo call_user_func_array('sprintf', array_merge($row, array_values($settings_html)));
 
             // Switch back to previous blog (main network blog)
             restore_current_blog();
