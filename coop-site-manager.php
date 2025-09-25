@@ -55,6 +55,7 @@ add_action('plugins_loaded', function () {
         CoopMediaLink::class,
         CoopMyAccount::class,
         InfoBanner::class,
+        LinkReport::class,
         LibPressSchema::class,
         NetworkSitkaLibraries::class,
         NetworkThemeSettings::class,

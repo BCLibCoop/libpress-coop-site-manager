@@ -24,6 +24,7 @@ abstract class AbstractSiteManagerPage
     protected $capability = 'manage_local_site';
     protected $admin_script_deps = ['jquery'];
     protected $script_deps = [];
+    protected $submit_button = '';
 
     public function __construct()
     {
@@ -185,7 +186,7 @@ abstract class AbstractSiteManagerPage
             $out[] = '<input type="hidden" name="action" value="' . static::$slug . '_submit">';
             $out[] = wp_nonce_field(static::$slug . '_submit', '_wpnonce', true, false);
         }
-        $out[] = get_submit_button('', 'primary', 'submit', true, ['id' => static::$slug . '-submit']);
+        $out[] = get_submit_button($this->submit_button, 'primary', 'submit', true, ['id' => static::$slug . '-submit']);
         $out[] = '</form>';
         $out[] = '</div>';
 
