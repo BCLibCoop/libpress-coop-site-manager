@@ -26,7 +26,7 @@ class LinkReport extends AbstractSiteManagerPage
         }
 
         $site_url = parse_url(get_bloginfo('url'));
-        $clean_url = preg_replace('/[\.\/]/', '_', $site_url['host'] . rtrim($site_url['path'], '/'));
+        $clean_url = preg_replace('/[\.\/]/', '_', $site_url['host'] . rtrim($site_url['path'] ?? '', '/'));
 
         $filename = sprintf('libpress-link-report-%s-%s.csv', $clean_url, wp_date('Ymd_His'));
 
