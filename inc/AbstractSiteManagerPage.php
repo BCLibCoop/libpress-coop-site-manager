@@ -126,6 +126,46 @@ abstract class AbstractSiteManagerPage
         }
     }
 
+    public function isWidgetActive()
+    {
+        $found_widgets = [];
+        $blocks = [];
+
+        // Legacy widget areas
+        foreach ($this->widgets as $widget_slug => $widget_class) {
+            if (is_active_widget(false, false, $widget_slug)) {
+                $found_widgets[] = $widget_slug;
+            }
+        }
+
+        // Blocks
+        $template_parts = array_merge(
+            get_theme_mod('header_order', []),
+            get_theme_mod('footer_menu_order', []),
+        );
+        $block_templates = array_filter($template_parts, function($template) {
+            return strpos($template, 'block-') === 0;
+        });
+        foreach ($block_templates as $part) {
+            $part = str_replace('block-', '', $part);
+            $template_part = get_block_template( get_stylesheet() . '//' . $part, 'wp_template_part' );
+            if ($template_part && ! empty( $template_part->content ) ) {
+                $blocks = array_merge($blocks, parse_blocks($template_part->content));
+            }
+        }
+
+        // Marked private and deprecated...
+        $all_blocks = _flatten_blocks($blocks);
+
+        foreach ($all_blocks as $block) {
+            if ($block['blockName'] === 'core/legacy-widget') {
+                $found_widgets[] = $block['attrs']['idBase'];
+            }
+        }
+
+        return !empty(array_intersect(array_keys($this->widgets), $found_widgets));
+    }
+
     public function addMenu()
     {
         add_submenu_page(
@@ -161,8 +201,17 @@ abstract class AbstractSiteManagerPage
         $out[] = '<h1 class="wp-heading-inline">' . static::$page_title . '</h1>';
         $out[] = '<hr class="wp-header-end">';
 
-        $out[] = '<form action="'
-            . esc_url(admin_url($this->settings_api ? 'options.php' : 'admin-post.php')) . '" method="post">';
+        $out[] = '<form action="' . esc_url(admin_url($this->settings_api ? 'options.php' : 'admin-post.php')) .
+            '" method="post" class="libpress-settings-form">';
+
+        if ($this->widgets && ! $this->isWidgetActive()) {
+            $out[] = '<style>.libpress-settings-form{position:relative;}.libpress-widget-warning-overlay{display:flex;align-items:center;justify-content:center;flex-direction:column;color:red;position:absolute;width:100%;height:100%;background:rgba(0,0,0,0.3);}</style>';
+            $out[] = '<div class="libpress-widget-warning-overlay">';
+            $out[] = '<p><strong>This widget does not seem to be visible on this site right now.</strong></p>';
+            $out[] = '<p><strong>The content in question may be using the block editor instead.</strong></p>';
+            $out[] = '<br><button type="button" class="button button-primary" onclick="this.parentElement.style.display = \'none\'">Edit Anyway</button>';
+            $out[] = '</div>';
+        }
 
         if ($this->settings_api) {
             ob_start();
