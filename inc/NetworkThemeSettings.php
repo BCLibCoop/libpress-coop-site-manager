@@ -9,6 +9,11 @@ class NetworkThemeSettings
     private static $settings = [
         'Custom CSS' => [self::class, 'customCSS'],
         'Style Settings' => [
+            'classic-editor-allow-users' => [
+                'label' => 'Block Editor',
+                'type' => 'custom',
+                'return' => [self::class, 'blockEditor'],
+            ],
             'header_text' => 'Title and Tagline',
             'site_icon' => [
                 'label' => 'Site Icon',
@@ -36,6 +41,7 @@ class NetworkThemeSettings
                 'label' => 'Footer Menu',
                 'return' => [self::class, 'checkMenuLocation'],
             ],
+            'global_container' => 'Use Global Container',
             'legacy_width' => 'Legacy Content Width',
             'show_sidebar' => 'Show Sidebar',
             'menu_justification' => 'Menu Justification',
@@ -107,9 +113,14 @@ class NetworkThemeSettings
         'sidebar-1',
     ];
 
+    private static $msSettings = [];
+
     public function __construct()
     {
         add_action('network_admin_menu', [$this, 'networkAdminMenu']);
+
+        self::$msSettings['editor'] = get_network_option(null, 'classic-editor-replace') === 'block' ? 'block' : 'classic';
+        self::$msSettings['allow-sites'] = get_network_option(null, 'classic-editor-allow-sites') === 'allow' ? 'allow' : 'deny';
     }
 
     /**
@@ -474,6 +485,28 @@ class NetworkThemeSettings
                     count($widgets),
                 );
             }
+        }
+    }
+
+    /**
+     * Check for block editor status
+     */
+    private static function blockEditor()
+    {
+        if (!class_exists(\Classic_Editor::class)) {
+            return 'Unrestricted';
+        }
+
+        if (self::$msSettings['allow-sites'] !== 'allow' && self::$msSettings['editor'] === 'block') {
+            return 'Network Forced';
+        }
+
+        if (get_option('classic-editor-allow-users') !== 'allow' && get_option('classic-editor-replace') === 'block') {
+            return 'Site Forced';
+        }
+
+        if (get_option('classic-editor-allow-users') === 'allow') {
+            return 'Site Allowed';
         }
     }
 }
