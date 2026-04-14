@@ -2,6 +2,8 @@
 
 use BCLibCoop\SiteManager\CoopHours;
 
+defined('ABSPATH') || die(1);
+
 extract($args);
 
 $days = wp_unslash(CoopHours::getDaysData());

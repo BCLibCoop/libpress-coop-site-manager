@@ -2,6 +2,8 @@
 
 use BCLibCoop\SiteManager\CoopMyAccount;
 
+defined('ABSPATH') || die(1);
+
 extract($args);
 
 // Check if polylang is available and if so get correct info for configured language
@@ -19,7 +21,7 @@ if (function_exists('pll_languages_list')) {
 <?= $before_title ?>
 
 <?php if (!empty($link_uri) && !empty($link_text)) : ?>
-    <a href="<?= esc_attr($link_uri) ?>"><?= $link_text ?></a>
+    <a href="<?= esc_url($link_uri) ?>"><?= $link_text ?></a>
 <?php else : ?>
     <!-- No account link/text set -->
 <?php endif; ?>

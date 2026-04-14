@@ -3,13 +3,15 @@
 use BCLibCoop\SiteManager\ContactInfo;
 use BCLibCoop\SiteManager\CoopLocationMap;
 
+defined('ABSPATH') || die(1);
+
 extract(CoopLocationMap::getMapData());
 ?>
 
 <?php if (empty($full_address)) : ?>
     <p>
         Please enter the library's address in the
-        <a href="<?= admin_url('admin.php?page=' . ContactInfo::$slug) ?>">Contact Information page</a>
+        <a href="<?= esc_url(admin_url('admin.php?page=' . ContactInfo::$slug)) ?>">Contact Information page</a>
         and then return here to set up the location map.
     </p>
     <?php return; ?>
@@ -17,7 +19,7 @@ extract(CoopLocationMap::getMapData());
 
 <p>
     To change the library's address please edit the
-    <a href="<?= admin_url('admin.php?page=' . ContactInfo::$slug) ?>">Contact Information page</a>.
+    <a href="<?= esc_url(admin_url('admin.php?page=' . ContactInfo::$slug)) ?>">Contact Information page</a>.
 </p>
 
 <p>Library Address:</p>
@@ -61,4 +63,4 @@ extract(CoopLocationMap::getMapData());
 </table>
 
 <iframe id="coop-location-map-preview" width="<?= esc_attr($data['width']) ?>" height="<?= esc_attr($data['height']) ?>"
-    style="border:0" src="<?= esc_attr($gmaps_url) ?>" allowfullscreen></iframe>
+    style="border:0" src="<?= esc_url($gmaps_url) ?>" allowfullscreen></iframe>

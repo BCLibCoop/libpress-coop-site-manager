@@ -1,9 +1,11 @@
+<?php defined('ABSPATH') || die(1); ?>
 <table class="form-table">
     <?php foreach ($this->languages as $curlang) : ?>
         <?php
         $link_text = stripslashes(get_option(static::$slug . $curlang->locale . '-label-text'));
         $link_uri = stripslashes(get_option(static::$slug . $curlang->locale . '-uri'));
         $prefix = static::$slug . $curlang->locale;
+        $prefix = esc_attr($prefix);
         ?>
 
         <tr valign="top">

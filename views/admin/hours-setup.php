@@ -1,5 +1,7 @@
 <?php
 
+defined('ABSPATH') || die(1);
+
 $days = get_option('coop-hours-days', []);
 $notes = stripslashes(get_option('coop-hours-notes', ''));
 $show_all = get_option('coop-hours-show-all', false);

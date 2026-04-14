@@ -1,5 +1,7 @@
 <?php
 
+defined('ABSPATH') || die(1);
+
 extract($args);
 
 $info = wp_unslash(get_option('coop-ci-info', []));
@@ -41,7 +43,7 @@ $maps_url = add_query_arg(
         <?php endif; ?>
 
         <?php if (!empty($info['address'])) : ?>
-            <a href="<?= $maps_url ?>" target="_blank" rel="noreferrer">
+            <a href="<?= esc_url($maps_url) ?>" target="_blank" rel="noreferrer">
                 <?= $info['address'] ?><br />
 
                 <?php if (!empty($info['address2'])) : ?>

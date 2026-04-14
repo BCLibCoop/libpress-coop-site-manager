@@ -46,7 +46,7 @@ class NetworkSitkaLibraries
             <h1 class="wp-heading-inline">Sitka Libraries</h1>
             <hr class="wp-header-end">
 
-            <form method="post" action="<?= admin_url('admin-post.php') ?>">
+            <form method="post" action="<?= esc_url(admin_url('admin-post.php')) ?>">
 
                 <table class="wp-list-table widefat fixed striped table-view-list">
                     <thead>

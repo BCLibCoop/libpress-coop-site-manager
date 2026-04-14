@@ -1,9 +1,11 @@
+<?php defined('ABSPATH') || die(1); ?>
 <p class="description">You may use <code>{{year}}</code> to show the current year.</p>
 
 <table class="form-table">
     <?php foreach ($this->languages as $curlang) : ?>
         <?php
         $option = implode('-', array_filter([static::$slug, $curlang->locale, 'footer-text']));
+        $option = esc_attr($option);
         $text = stripslashes(get_option($option));
         ?>
 
