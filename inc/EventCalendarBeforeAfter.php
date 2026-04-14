@@ -54,13 +54,13 @@ class EventCalendarBeforeAfter extends AbstractSiteManagerPage
 
         // Hook the default before/after functions to community events so the rest
         // of our logic doesn't need to change
-        add_filter('tec_community_tickets_before_html', function($output) {
+        add_filter('tec_community_tickets_before_html', function ($output) {
             ob_start();
             echo $output;
             tribe_events_before_html();
             return ob_get_clean();
         });
-        add_filter('tec_community_tickets_after_html', function($output) {
+        add_filter('tec_community_tickets_after_html', function ($output) {
             ob_start();
             echo $output;
             tribe_events_after_html();
@@ -146,7 +146,7 @@ class EventCalendarBeforeAfter extends AbstractSiteManagerPage
                     'multiple' => 0,
                 ])
                     ->conditional('location', '==', 'category')
-            ->endRepeater();
+            ->endRepeater()
         ;
 
         // Tag/WYSIWYG for each language
@@ -252,7 +252,8 @@ class EventCalendarBeforeAfter extends AbstractSiteManagerPage
      */
     protected function isCommunityPage()
     {
-        return tribe(\TEC\Events_Community\Custom_Tables\V1\Assets::class)->is_edit_route();
+        return class_exists(\TEC\Events_Community\Custom_Tables\V1\Assets::class)
+            && tribe(\TEC\Events_Community\Custom_Tables\V1\Assets::class)->is_edit_route();
     }
 
     /**
@@ -268,8 +269,8 @@ class EventCalendarBeforeAfter extends AbstractSiteManagerPage
             || tribe_is_map()
             || tribe_is_list_view()
         )
-        && ! is_tax()
-        && ! is_single();
+            && ! is_tax()
+            && ! is_single();
     }
 
     /**
