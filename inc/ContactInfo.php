@@ -40,13 +40,7 @@ class ContactInfo extends AbstractSiteManagerPage
 
     public function saveChangeCallback()
     {
-        // Check the nonce field, if it doesn't verify report error and stop
-        if (
-            ! isset($_POST['_wpnonce'])
-            || ! wp_verify_nonce($_POST['_wpnonce'], static::$slug . '_submit')
-        ) {
-            wp_die('Sorry, there was an error handling your form submission.');
-        }
+        parent::saveChangeCallback();
 
         $info = [];
 
