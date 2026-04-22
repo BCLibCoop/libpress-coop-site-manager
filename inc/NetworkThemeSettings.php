@@ -252,6 +252,9 @@ class NetworkThemeSettings
                         $setting_val = $setting_val[$setting_key];
                     }
 
+                    // Catch values that should be arrays that are a blank string
+                    $setting_val = ($return == 'count' && $setting_val == '') ? null : $setting_val;
+
                     // Run the 'return' function if we have one, and the value isn't null
                     if (($setting_val !== null || $type === 'custom') && is_callable($return)) {
                         $setting_val = call_user_func($return, $setting_val) ?: null;
