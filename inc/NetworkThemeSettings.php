@@ -178,15 +178,15 @@ class NetworkThemeSettings
             <table class="wp-list-table widefat fixed striped table-view-list">
                 <thead>
                     <tr>
-                        <th class="column-posts">WP Site ID</th>
-                        <th>Domain Name</th>
+                        <th scope="col" class="column-primary manage-column">Domain Name</th>
+                        <th scope="col" class="column-posts num manage-column">Site ID</th>
                         <?php foreach (array_keys(self::$settings) as $section_header) : ?>
-                            <th><?= $section_header ?></th>
+                            <th scope="col" class="manage-column"><?= $section_header ?></th>
                         <?php endforeach; ?>
                     </tr>
                 </thead>
 
-                <tbody>
+                <tbody id="the-list">
                     <?php $this->networkLibraryRows(); ?>
                 </tbody>
 
@@ -362,21 +362,26 @@ class NetworkThemeSettings
                     . '">Edit CSS</a>'
             ]);
             $row_actions .= '</span></div>';
+            $row_button = '<button type="button" class="toggle-row">
+                <span class="screen-reader-text">Show more details</span>
+            </button>';
 
             // Output row
             $row = [
                 '<tr>' .
-                    '<td class="column-posts">%d</td>' .
-                    '<td class="has-row-actions"><strong><a href="%s">%s</a></strong>%s</td>' .
-                    str_repeat('<td>%s</td>', count($settings_html)) .
+                    '<td class="has-row-actions column-primary" data-colname="Domain Name"><strong><a href="%s">%s</a></strong>%s%s</td>' .
+                    '<td class="column-posts" data-colname="Site ID">%d</td>' .
+                    str_repeat('<td data-colname="%s">%s</td>', count($settings_html)) .
                 '</tr>',
-                $blog->blog_id,
                 esc_url(home_url('/')),
                 esc_html($blog->domain),
+                $row_button,
                 $row_actions,
+                $blog->blog_id
             ];
 
-            echo call_user_func_array('sprintf', array_merge($row, array_values($settings_html)));
+            $col_names_and_data = array_merge(...array_map(null, array_keys($settings_html), array_values($settings_html)));
+            echo call_user_func_array('sprintf', array_merge($row, $col_names_and_data));
 
             // Switch back to previous blog (main network blog)
             restore_current_blog();
