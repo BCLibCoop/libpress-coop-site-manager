@@ -7,7 +7,7 @@ use BCLibCoop\CoopHighlights\CoopHighlights;
 class NetworkThemeSettings
 {
     private static $settings = [
-        'Custom CSS' => [self::class, 'customCSS'],
+        'Custom CSS' => [[self::class, 'customCSS']],
         'Style Settings' => [
             'classic-editor-allow-users' => [
                 'label' => 'Block Editor',
@@ -99,7 +99,7 @@ class NetworkThemeSettings
                 'return' => 'count',
             ],
         ],
-        'Widget Configuration' => [self::class, 'widgetAreas'],
+        'Widget Configuration' => [[self::class, 'widgetAreas']],
     ];
 
     private static $widgetOrder = [
@@ -206,19 +206,42 @@ class NetworkThemeSettings
             'deleted' => 0,
         ]);
 
-        // Loop through each blog lookup options and output form
         foreach ($blogs as $blog) {
+            echo '<tr>';
+
             switch_to_blog($blog->blog_id);
 
-            $settings_html = array_fill_keys(array_keys(self::$settings), '');
+            $row_actions = '<div class="row-actions"><span>';
+            $row_actions .= join(' | </span><span>', [
+                '<a href="' . esc_url(home_url('/')) . '" rel="bookmark">Visit</a>',
+                '<a href="' . esc_url(network_admin_url('site-info.php?id=' . $blog->blog_id)) . '">Edit</a>',
+                '<a href="' . esc_url(admin_url()) . '" class="edit">Dashboard</a>',
+                '<a href="' . esc_url(admin_url('widgets.php')) . '">Widgets</a>',
+                '<a href="' . esc_url(add_query_arg('autofocus[section]', 'custom_css', admin_url('customize.php'))) . '">Edit CSS</a>'
+            ]);
+            $row_actions .= '</span></div>';
+            $row_buttons = '<button type="button" class="toggle-row"><span class="screen-reader-text">Show more details</span></button>';
+
+            // Primary Column
+            printf(
+                '<td class="has-row-actions column-primary" data-colname="Domain Name"><strong><a href="%s">%s</a></strong>%s%s</td>',
+                esc_url(home_url('/')),
+                esc_html($blog->domain),
+                $row_buttons,
+                $row_actions,
+            );
+
+            printf('<td class="column-posts" data-colname="Site ID">%d</td>', $blog->blog_id);
 
             foreach (self::$settings as $settings_section_name => $settings_section) {
-                if (is_callable($settings_section)) {
-                    call_user_func_array($settings_section, [&$settings_html]);
-                    continue;
-                }
+                $settings_html = '';
 
                 foreach ($settings_section as $setting => $setting_option) {
+                    if (is_callable($setting_option)) {
+                        $settings_html .= call_user_func($setting_option);
+                        continue;
+                    }
+
                     $setting = $setting_option['setting'] ?? $setting;
                     $label = $setting_option['label'] ?? $setting_option ?? 'Unknown';
                     $default = $setting_option['default'] ?? null;
@@ -340,7 +363,7 @@ class NetworkThemeSettings
                         }
 
                         if (!empty($setting_vals)) {
-                            $settings_html[$settings_section_name] .= sprintf(
+                            $settings_html .= sprintf(
                                 '<div><strong>%s:</strong> %s</div>',
                                 esc_html($label),
                                 implode(', ', $setting_vals),
@@ -348,43 +371,16 @@ class NetworkThemeSettings
                         }
                     }
                 }
+
+                // Output the column
+                printf('<td data-colname="%s">%s</td>', $settings_section_name, $settings_html);
             }
-
-            // Row actions
-            $row_actions = '<div class="row-actions"><span>';
-            $row_actions .= join(' | </span><span>', [
-                '<a href="' . esc_url(home_url('/')) . '" rel="bookmark">Visit</a>',
-                '<a href="' . esc_url(network_admin_url('site-info.php?id=' . $blog->blog_id)) . '">Edit</a>',
-                '<a href="' . esc_url(admin_url()) . '" class="edit">Dashboard</a>',
-                '<a href="' . esc_url(admin_url('widgets.php')) . '">Widgets</a>',
-                '<a href="'
-                    . esc_url(add_query_arg('autofocus[section]', 'custom_css', admin_url('customize.php')))
-                    . '">Edit CSS</a>'
-            ]);
-            $row_actions .= '</span></div>';
-            $row_button = '<button type="button" class="toggle-row">
-                <span class="screen-reader-text">Show more details</span>
-            </button>';
-
-            // Output row
-            $row = [
-                '<tr>' .
-                    '<td class="has-row-actions column-primary" data-colname="Domain Name"><strong><a href="%s">%s</a></strong>%s%s</td>' .
-                    '<td class="column-posts" data-colname="Site ID">%d</td>' .
-                    str_repeat('<td data-colname="%s">%s</td>', count($settings_html)) .
-                '</tr>',
-                esc_url(home_url('/')),
-                esc_html($blog->domain),
-                $row_button,
-                $row_actions,
-                $blog->blog_id
-            ];
-
-            $col_names_and_data = array_merge(...array_map(null, array_keys($settings_html), array_values($settings_html)));
-            echo call_user_func_array('sprintf', array_merge($row, $col_names_and_data));
 
             // Switch back to previous blog (main network blog)
             restore_current_blog();
+
+            // Finish output here to constrain any errors to this row
+            echo '</tr>';
         }
     }
 
@@ -445,12 +441,12 @@ class NetworkThemeSettings
     /**
      * Get custom CSS and updated date
      */
-    private static function customCSS(&$settings_html)
+    private static function customCSS()
     {
         $css = wp_get_custom_css();
         $css_post = wp_get_custom_css_post(get_stylesheet());
 
-        $settings_html['Custom CSS'] .= sprintf(
+        return sprintf(
             '<textarea rows="5" class="code" %s>%s</textarea>'
             . '<span>%d lines</span>&nbsp;<span>(Last updated %s)',
             empty($css) ? 'readonly disabled' : 'readonly',
@@ -463,8 +459,10 @@ class NetworkThemeSettings
     /**
      * Get count of widgets in the widget areas
      */
-    private static function widgetAreas(&$settings_html)
+    private static function widgetAreas()
     {
+        $sidebar_html = '';
+
         if ($sidebars = wp_get_sidebars_widgets()) {
             /**
              * Sort the widget areas.
@@ -487,13 +485,15 @@ class NetworkThemeSettings
 
                 $sidebar_name = wp_get_sidebar($sidebar_name)['name'];
 
-                $settings_html['Widget Configuration'] .= sprintf(
+                $sidebar_html .= sprintf(
                     '<div><strong>%1$s Widgets:</strong> <span class="code value-%2$d">%2$d</span></div>',
                     esc_html($sidebar_name),
                     count($widgets),
                 );
             }
         }
+
+        return $sidebar_html;
     }
 
     /**
