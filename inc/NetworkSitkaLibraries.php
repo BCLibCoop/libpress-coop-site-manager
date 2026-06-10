@@ -124,9 +124,8 @@ class NetworkSitkaLibraries
             wp_die('Sorry, you do not have permission to access this page');
         }
 
-        // Get all active public blogs
+        // Get all active blogs
         $blogs = get_sites([
-            'public' => 1,
             'archived' => 0,
             'deleted' => 0,
         ]);
