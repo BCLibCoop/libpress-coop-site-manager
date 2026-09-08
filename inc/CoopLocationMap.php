@@ -44,6 +44,7 @@ class CoopLocationMap extends AbstractSiteManagerPage
                 'key' => GMAPSAPIKEY,
                 'q' => $address_encoded,
                 'zoom' => $data['zoom'],
+                'region' => 'CA',
             ],
             'https://www.google.com/maps/embed/v1/place'
         );
