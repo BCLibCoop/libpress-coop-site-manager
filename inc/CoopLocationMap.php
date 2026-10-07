@@ -10,6 +10,16 @@ class CoopLocationMap extends AbstractSiteManagerPage
 
     protected $position = 2;
 
+    public function __construct()
+    {
+        // MapLibre OSM map widget in testing
+        if (defined('WP_ENV') && WP_ENV !== 'production') {
+            $this->widgets['coop-location-osm-widget'] = Widget\CoopLocationOSMWidget::class;
+        }
+
+        parent::__construct();
+    }
+
     public static function getMapData()
     {
         $address = wp_unslash(get_option('coop-ci-info'));
