@@ -13,7 +13,7 @@ class ContactInfoWidget extends AbstractCoopWidget
         $this->name = 'Contact Information';
         $this->options = [
             'classname' => 'CoopSiteManager_coop_site_manager_ci_widget',
-            'description' => 'Displays content information as ented in the Site Manager',
+            'description' => 'Displays content information as entered in the Site Manager',
         ];
 
         parent::__construct();

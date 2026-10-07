@@ -143,13 +143,13 @@ abstract class AbstractSiteManagerPage
             get_theme_mod('header_order', []),
             get_theme_mod('footer_menu_order', []),
         );
-        $block_templates = array_filter($template_parts, function($template) {
+        $block_templates = array_filter($template_parts, function ($template) {
             return strpos($template, 'block-') === 0;
         });
         foreach ($block_templates as $part) {
             $part = str_replace('block-', '', $part);
-            $template_part = get_block_template( get_stylesheet() . '//' . $part, 'wp_template_part' );
-            if ($template_part && ! empty( $template_part->content ) ) {
+            $template_part = get_block_template(get_stylesheet() . '//' . $part, 'wp_template_part');
+            if ($template_part && ! empty($template_part->content)) {
                 $blocks = array_merge($blocks, parse_blocks($template_part->content));
             }
         }
